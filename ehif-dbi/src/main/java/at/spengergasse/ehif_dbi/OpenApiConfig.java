@@ -17,8 +17,8 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("BSU Dashboard API")
-                        .description("REST API for accessing BSU Dashboard data")
+                        .title("DBI Catholic API")
+                        .description("REST API for accessing 5EHIF DBI Project data")
                         .version("1.0")
                 );
     }
