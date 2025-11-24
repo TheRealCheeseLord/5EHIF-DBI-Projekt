@@ -1,5 +1,6 @@
 package at.spengergasse.ehif_dbi.benchmark;
 
+import at.spengergasse.ehif_dbi.benchmark.dto.*;
 import at.spengergasse.ehif_dbi.domain.mongo.ParishDocument;
 import at.spengergasse.ehif_dbi.domain.mongo.ParishionerEmbedded;
 import at.spengergasse.ehif_dbi.domain.postgres.Parishioner;
@@ -8,13 +9,15 @@ import at.spengergasse.ehif_dbi.persistence.postgres.ParishionerRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class BenchmarkRunner {
 
@@ -28,9 +31,17 @@ public class BenchmarkRunner {
     // ÖFFENTLICHE METHODEN – werden vom Controller aufgerufen
     // ===========================================================
 
-    /** Komplettes Szenario: Write + Reads + Update + Delete */
-    public void runAllBenchmarks() {
+    /**
+     * Komplettes Szenario: Write + Reads + Update + Delete<br>
+     * Method should not be used, since read times are not optimized and are not comparable<br>
+     * Instead call each distinctly and aggregate after
+     * */
+    @Transactional()
+    @Deprecated(forRemoval = false)
+    public AllTestOutputDto runAllBenchmarks() {
         System.out.println("=== BENCHMARK (ALL) STARTED ===");
+
+        AllTestOutputDto outputDto = null;
 
         for (int n : SCALES) {
             System.out.println();
@@ -40,19 +51,31 @@ public class BenchmarkRunner {
             parishionerRepository.deleteAll();
             parishDocumentRepository.deleteAll();
 
-            runWritesForScale(n);
-            runReadsForScale();
-            runUpdatesForScale();
-            runDeletesForScale();
+            WriteTestOutputDto writeTestOutputDto = runWritesForScale(n);
+            ReadTestOutputDto readTestOutputDto = runReadsForScale();
+            UpdateTestOutputDto updateTestOutputDto = runUpdatesForScale();
+            DeleteTestOutputDto deleteTestOutputDto = runDeletesForScale();
+
+            outputDto = new AllTestOutputDto(
+                    writeTestOutputDto,
+                    readTestOutputDto,
+                    updateTestOutputDto,
+                    deleteTestOutputDto
+            );
         }
 
         System.out.println();
         System.out.println("=== BENCHMARK (ALL) FINISHED ===");
+
+        return outputDto;
     }
 
     /** Nur Writes (inkl. Reset davor) */
-    public void runWriteBenchmarks() {
+    @Transactional()
+    public WriteTestOutputDto runWriteBenchmarks() {
         System.out.println("=== WRITE BENCHMARKS STARTED ===");
+
+        WriteTestOutputDto outputDto = null;
 
         for (int n : SCALES) {
             System.out.println();
@@ -61,63 +84,89 @@ public class BenchmarkRunner {
             parishionerRepository.deleteAll();
             parishDocumentRepository.deleteAll();
 
-            runWritesForScale(n);
+            outputDto = runWritesForScale(n);
         }
 
         System.out.println();
         System.out.println("=== WRITE BENCHMARKS FINISHED ===");
+
+        return outputDto;
     }
 
     /** Nur Reads – erwartet, dass vorher Daten geschrieben wurden */
-    public void runReadBenchmarks() {
+    @Transactional(readOnly = true)
+    public ReadTestOutputDto runReadBenchmarks() {
         System.out.println("=== READ BENCHMARKS STARTED ===");
+
+        ReadTestOutputDto outputDto = null;
+
         for (int n : SCALES) {
             System.out.println();
             System.out.println("NOTE: expects existing data, scale label = " + n);
-            runReadsForScale();
+
+            outputDto = runReadsForScale();
         }
         System.out.println();
         System.out.println("=== READ BENCHMARKS FINISHED ===");
+
+        return outputDto;
     }
 
     /** Nur Updates – erwartet vorhandene Daten */
-    public void runUpdateBenchmarks() {
+    @Transactional()
+    public UpdateTestOutputDto runUpdateBenchmarks() {
         System.out.println("=== UPDATE BENCHMARKS STARTED ===");
+
+        UpdateTestOutputDto outputDto = null;
+
         for (int n : SCALES) {
             System.out.println();
             System.out.println("NOTE: expects existing data, scale label = " + n);
-            runUpdatesForScale();
+
+            outputDto = runUpdatesForScale();
         }
+
         System.out.println();
         System.out.println("=== UPDATE BENCHMARKS FINISHED ===");
+
+        return outputDto;
     }
 
     /** Nur Deletes */
-    public void runDeleteBenchmarks() {
+    @Transactional()
+    public DeleteTestOutputDto runDeleteBenchmarks() {
         System.out.println("=== DELETE BENCHMARKS STARTED ===");
+
+        DeleteTestOutputDto outputDto = null;
+
         for (int n : SCALES) {
             System.out.println();
             System.out.println("NOTE: deleteAll – scale label = " + n);
-            runDeletesForScale();
+
+            outputDto = runDeletesForScale();
         }
         System.out.println();
         System.out.println("=== DELETE BENCHMARKS FINISHED ===");
+
+        return outputDto;
     }
 
     // ===========================================================
     // PRIVATE HILFSMETHODEN PRO KATEGORIE
     // ===========================================================
 
-    private void runWritesForScale(int n) {
+    private WriteTestOutputDto runWritesForScale(int n) {
         long pgWrite = measureMillis(() -> writeParishionersPostgres(n));
         long mongoWrite = measureMillis(() -> writeParishionersMongo(n));
 
         System.out.println("-- WRITE");
         System.out.println("Postgres write time : " + pgWrite + " ms");
         System.out.println("MongoDB  write time : " + mongoWrite + " ms");
+
+        return new WriteTestOutputDto(pgWrite, mongoWrite);
     }
 
-    private void runReadsForScale() {
+    private ReadTestOutputDto runReadsForScale() {
         System.out.println("-- READ: find all");
         long pgReadAll = measureMillis(this::readAllPostgres);
         long mongoReadAll = measureMillis(this::readAllMongo);
@@ -141,22 +190,37 @@ public class BenchmarkRunner {
         long mongoReadProjSort = measureMillis(this::readFilteredProjectedSortedMongo);
         System.out.println("Postgres readFiltered+Proj+Sort time : " + pgReadProjSort + " ms");
         System.out.println("MongoDB  readFiltered+Proj+Sort time : " + mongoReadProjSort + " ms");
+
+        return new ReadTestOutputDto(
+                pgReadAll,
+                mongoReadAll,
+                pgReadFilter,
+                mongoReadFilter,
+                pgReadProj,
+                mongoReadProj,
+                pgReadProjSort,
+                mongoReadProjSort
+        );
     }
 
-    private void runUpdatesForScale() {
+    private UpdateTestOutputDto runUpdatesForScale() {
         System.out.println("-- UPDATE (change firstName of some parishioners)");
         long pgUpdate = measureMillis(this::updateSomePostgres);
         long mongoUpdate = measureMillis(this::updateSomeMongo);
         System.out.println("Postgres update time : " + pgUpdate + " ms");
         System.out.println("MongoDB  update time : " + mongoUpdate + " ms");
+
+        return new UpdateTestOutputDto(pgUpdate, mongoUpdate);
     }
 
-    private void runDeletesForScale() {
+    private DeleteTestOutputDto runDeletesForScale() {
         System.out.println("-- DELETE ALL");
         long pgDelete = measureMillis(parishionerRepository::deleteAll);
         long mongoDelete = measureMillis(parishDocumentRepository::deleteAll);
         System.out.println("Postgres deleteAll time : " + pgDelete + " ms");
         System.out.println("MongoDB  deleteAll time : " + mongoDelete + " ms");
+
+        return new DeleteTestOutputDto(pgDelete, mongoDelete);
     }
 
     // ===========================================================
