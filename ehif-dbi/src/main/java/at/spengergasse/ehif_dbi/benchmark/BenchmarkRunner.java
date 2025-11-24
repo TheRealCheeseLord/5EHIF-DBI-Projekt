@@ -5,10 +5,14 @@ import at.spengergasse.ehif_dbi.domain.mongo.ParishDocument;
 import at.spengergasse.ehif_dbi.domain.mongo.ParishionerEmbedded;
 import at.spengergasse.ehif_dbi.domain.postgres.Parishioner;
 import at.spengergasse.ehif_dbi.persistence.mongo.ParishDocumentRepository;
+import at.spengergasse.ehif_dbi.persistence.postgres.ParishRepository;
 import at.spengergasse.ehif_dbi.persistence.postgres.ParishionerRepository;
+import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.springframework.stereotype.Component;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +27,11 @@ public class BenchmarkRunner {
 
     private final ParishionerRepository parishionerRepository;
     private final ParishDocumentRepository parishDocumentRepository;
+    private final MongoTemplate mongoTemplate;
 
     // später kannst du 100_000 ergänzen
     private static final int[] SCALES = {10_000};
+    private final ParishRepository parishRepository;
 
     // ===========================================================
     // ÖFFENTLICHE METHODEN – werden vom Controller aufgerufen
@@ -205,8 +211,8 @@ public class BenchmarkRunner {
 
     private UpdateTestOutputDto runUpdatesForScale() {
         System.out.println("-- UPDATE (change firstName of some parishioners)");
-        long pgUpdate = measureMillis(this::updateSomePostgres);
-        long mongoUpdate = measureMillis(this::updateSomeMongo);
+        long pgUpdate = measureMillis(this::updateAllPostgres);
+        long mongoUpdate = measureMillis(this::updateAllMongo);
         System.out.println("Postgres update time : " + pgUpdate + " ms");
         System.out.println("MongoDB  update time : " + mongoUpdate + " ms");
 
@@ -333,31 +339,14 @@ public class BenchmarkRunner {
     // UPDATE
     // ===========================================================
 
-    private void updateSomePostgres() {
-        List<Parishioner> all = readAllPostgres();
-        int limit = Math.min(50, all.size());
-
-        for (int i = 0; i < limit; i++) {
-            Parishioner p = all.get(i);
-            p.setFirstName(p.getFirstName() + "_UPDATED");
-        }
-
-        parishionerRepository.saveAll(all.subList(0, limit));
+    private void updateAllPostgres() {
+        parishionerRepository.updateAllParishioners();
     }
 
-    private void updateSomeMongo() {
-        List<ParishDocument> docs = parishDocumentRepository.findAll();
-        if (docs.isEmpty()) return;
+    private void updateAllMongo() {
+        Query query = new Query();
+        Update update = new Update().set("parishioners.$[].firstName", "UPDATED");
 
-        ParishDocument doc = docs.get(0);
-        List<ParishionerEmbedded> parishioners = doc.getParishioners();
-
-        int limit = Math.min(50, parishioners.size());
-        for (int i = 0; i < limit; i++) {
-            ParishionerEmbedded p = parishioners.get(i);
-            p.setFirstName(p.getFirstName() + "_UPDATED");
-        }
-
-        parishDocumentRepository.save(doc);
+        UpdateResult result = mongoTemplate.updateMulti(query, update, ParishDocument.class);
     }
 }
