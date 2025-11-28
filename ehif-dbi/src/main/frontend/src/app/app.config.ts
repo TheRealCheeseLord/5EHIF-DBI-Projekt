@@ -3,9 +3,8 @@ import {
   DEFAULT_CURRENCY_CODE,
   LOCALE_ID,
   provideBrowserGlobalErrorListeners,
-  provideZoneChangeDetection,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 import localeAT from '@angular/common/locales/de-AT';
 import localeATExtra from '@angular/common/locales/extra/de-AT';
@@ -17,8 +16,7 @@ registerLocaleData(localeAT, 'de-AT', localeATExtra);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'de-AT' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
