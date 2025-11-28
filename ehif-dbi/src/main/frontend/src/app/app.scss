@@ -1,0 +1,17 @@
+.block {
+  display: block;
+  height: 5rem;
+  aspect-ratio: 1/1;
+
+  &.error {
+    background-color: rgb(var(--error-bg));
+  }
+
+  &.warning {
+    background-color: rgb(var(--warning-bg));
+  }
+
+  &.success {
+    background-color: rgb(var(--success-bg));
+  }
+}

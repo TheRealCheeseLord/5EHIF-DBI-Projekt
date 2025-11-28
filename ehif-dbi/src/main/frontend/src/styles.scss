@@ -1,6 +1,12 @@
 @use '@fontsource-variable/inter';
 
 :root {
+  --text-color: 251, 251, 251;
+  --background-color: 22, 22, 29;
+
+  --error-bg: 255, 147, 149;
+  --warning-bg: 255, 215, 159;
+  --success-bg: 199, 215, 167;
 }
 
 *,
