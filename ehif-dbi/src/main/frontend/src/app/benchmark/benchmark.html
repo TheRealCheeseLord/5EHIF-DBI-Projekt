@@ -1,0 +1,89 @@
+<div class="bench-root">
+  <div class="bench-wrapper">
+    <header class="bench-header">
+      <h1>Database Benchmark Center</h1>
+      <p class="subtitle">
+        Compare Postgres and MongoDB performance for writes, reads, updates and deletes.
+      </p>
+
+      <nav class="chip-row">
+        <span class="chip chip--pg">Postgres</span>
+        <span class="chip chip--mg">MongoDB</span>
+      </nav>
+    </header>
+
+    <section class="bench-main">
+      <!-- Controls -->
+      <div class="card card--controls">
+        <div class="card-header-row">
+          <h2>Run Benchmarks</h2>
+          <span class="card-tag">Live API</span>
+        </div>
+
+        <p class="card-desc">
+          Trigger individual benchmark categories. Results are recorded in the history chart.
+        </p>
+
+        <div class="actions">
+          <button type="button" (click)="run('writes')" [disabled]="loading">Writes</button>
+          <button type="button" (click)="run('reads')" [disabled]="loading">Reads</button>
+          <button type="button" (click)="run('updates')" [disabled]="loading">Updates</button>
+          <button type="button" (click)="run('deletes')" [disabled]="loading">Deletes</button>
+        </div>
+
+        <div class="status-row" *ngIf="loading || error">
+          <span class="pill pill--loading" *ngIf="loading"> Running benchmark… </span>
+          <span class="pill pill--error" *ngIf="error">
+            {{ error }}
+          </span>
+        </div>
+      </div>
+
+      <!-- LATEST RESPONSE -->
+      <div class="card card--results" *ngIf="results as res">
+        <div class="card-header-row">
+          <h2>Latest Response</h2>
+
+          <span class="badge" *ngIf="lastType">
+            {{ labelForType(lastType) }}
+          </span>
+        </div>
+
+        <p class="card-desc">Average times per operation, based on the latest run.</p>
+
+        <div class="stats">
+          <div class="stat stat--pg">
+            <div class="stat-label-row">
+              <span class="dot dot--pg"></span>
+              <span class="label">Postgres (avg)</span>
+            </div>
+            <span class="value"> {{ lastPgTime | number : '1.0-0' }} ms </span>
+          </div>
+          <div class="stat stat--mg">
+            <div class="stat-label-row">
+              <span class="dot dot--mg"></span>
+              <span class="label">MongoDB (avg)</span>
+            </div>
+            <span class="value"> {{ lastMgTime | number : '1.0-0' }} ms </span>
+          </div>
+        </div>
+
+        <details class="json-details">
+          <summary>Show raw JSON payload</summary>
+          <pre class="json-pre">{{ res | json }}</pre>
+        </details>
+      </div>
+
+      <!-- Chart -->
+      <div class="card card--chart">
+        <h2>Run History</h2>
+        <p class="card-desc">
+          Each benchmark run adds a new data point. Use it to compare relative performance.
+        </p>
+        <div class="chart-shell">
+          <canvas id="benchmarkChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,344 @@
+@use '@fontsource-variable/inter';
+
+:root {
+  --text-color: 251, 251, 251;
+  --background-color: 10, 10, 16;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  text-rendering: optimizeLegibility;
+  font-kerning: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: rgb(var(--text-color));
+  background: radial-gradient(circle at top, #181826 0, #050509 55%);
+  font-family: 'Inter Variable', system-ui, sans-serif;
+}
+
+/* ------------------------------ */
+/* LAYOUT WRAPPER */
+/* ------------------------------ */
+
+.bench-root {
+  padding: 2.5rem 1.5rem 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.bench-wrapper {
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* ------------------------------ */
+/* HEADER */
+/* ------------------------------ */
+
+.bench-header {
+  margin-bottom: 2rem;
+}
+
+.bench-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.bench-header p {
+  margin: 0.4rem 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+/* Chips */
+.chip-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.chip {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.chip--pg {
+  border-color: rgba(0, 200, 255, 0.7);
+}
+.chip--mg {
+  border-color: rgba(255, 0, 150, 0.7);
+}
+
+/* ------------------------------ */
+/* GRID */
+/* ------------------------------ */
+
+.bench-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ------------------------------ */
+/* CARD */
+/* ------------------------------ */
+
+.card {
+  background: radial-gradient(circle at top left, #262638 0, #171720 45%, #12121a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem 1.75rem;
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.card--results {
+  border-color: rgba(0, 200, 255, 0.2);
+  box-shadow: 0 0 40px rgba(0, 200, 255, 0.08);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.card-desc {
+  margin: 0.5rem 0 1.2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* small tag in the corner of cards */
+.card-tag {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 200, 255, 0.4);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(180, 230, 255, 0.9);
+}
+
+/* benchmark type badge */
+.badge {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------ */
+/* BUTTONS */
+/* ------------------------------ */
+
+.actions {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+button {
+  padding: 0.75rem 1.4rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease,
+    border-color 0.12s ease, opacity 0.12s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+/* ------------------------------ */
+/* STATUS */
+/* ------------------------------ */
+
+.status-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.pill {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pill--loading {
+  background: rgba(0, 150, 255, 0.18);
+  color: rgba(200, 230, 255, 0.98);
+}
+
+.pill--error {
+  background: rgba(255, 60, 60, 0.18);
+  color: rgba(255, 205, 205, 0.98);
+}
+
+/* ------------------------------ */
+/* RESULTS */
+/* ------------------------------ */
+
+.stats {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stat {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.stat .label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stat .value {
+  font-size: 1.4rem;
+  margin-top: 0.2rem;
+  font-weight: 600;
+}
+
+.stat--pg {
+  border-color: rgba(0, 200, 255, 0.35);
+}
+.stat--mg {
+  border-color: rgba(255, 0, 150, 0.35);
+}
+
+/* colored dot next to labels */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.dot--pg {
+  background: rgba(0, 200, 255, 0.9);
+}
+.dot--mg {
+  background: rgba(255, 0, 150, 0.9);
+}
+
+/* ------------------------------ */
+/* JSON DETAILS */
+/* ------------------------------ */
+
+.json-details {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+}
+
+.json-details summary {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.json-pre {
+  margin-top: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  overflow-x: auto;
+  max-height: 260px;
+}
+
+/* ------------------------------ */
+/* CHART */
+/* ------------------------------ */
+
+.chart-shell {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  height: 240px;
+  width: 100%;
+  overflow: hidden;
+}
+
+#benchmarkChart {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* ------------------------------ */
+/* MOBILE */
+/* ------------------------------ */
+
+@media (max-width: 900px) {
+  .bench-root {
+    padding: 1.75rem 1.1rem 2.5rem;
+  }
+
+  .card {
+    padding: 1.3rem 1.3rem;
+  }
+
+  .bench-header h1 {
+    font-size: 1.6rem;
+  }
+}

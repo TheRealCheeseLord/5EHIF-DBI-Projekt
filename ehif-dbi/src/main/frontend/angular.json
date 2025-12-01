@@ -29,12 +29,8 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "polyfills": [
-              "@angular/localize/init"
-            ]
+            "styles": ["src/styles.scss"],
+            "polyfills": ["@angular/localize/init"]
           },
           "configurations": {
             "production": {
@@ -67,7 +63,8 @@
               "buildTarget": "dbi:build:production"
             },
             "development": {
-              "buildTarget": "dbi:build:development"
+              "buildTarget": "dbi:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

@@ -240,7 +240,13 @@ public class BenchmarkRunner {
         return (end - start) / 1_000_000; // ns → ms
     }
 
-    // ===========================================================
+    // ===========================================================  /**
+    //   * For writes/updates/deletes:
+    //   *   DTO has `postgresTimeMs` + `mongoTimeMs`.
+    //   * For reads:
+    //   *   DTO has multiple postgres*/mongo* fields.
+    //   *   We take the average of all postgres* fields and all mongo* fields.
+    //   */
     // WRITE-OPERATIONEN
     // ===========================================================
 
