@@ -2,11 +2,9 @@ package at.spengergasse.ehif_dbi.benchmark;
 
 import at.spengergasse.ehif_dbi.benchmark.dto.*;
 import at.spengergasse.ehif_dbi.domain.mongo.ParishDocument;
-import at.spengergasse.ehif_dbi.domain.mongo.ParishionerEmbedded;
-import at.spengergasse.ehif_dbi.domain.postgres.Parishioner;
+import at.spengergasse.ehif_dbi.domain.postgres.Parish;
 import at.spengergasse.ehif_dbi.persistence.mongo.ParishDocumentRepository;
 import at.spengergasse.ehif_dbi.persistence.postgres.ParishRepository;
-import at.spengergasse.ehif_dbi.persistence.postgres.ParishionerRepository;
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -16,106 +14,60 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class BenchmarkRunner {
 
-    private final ParishionerRepository parishionerRepository;
+    private final ParishRepository parishRepository;
     private final ParishDocumentRepository parishDocumentRepository;
     private final MongoTemplate mongoTemplate;
 
     // später kannst du 100_000 ergänzen
-    private static final int[] SCALES = {10_000};
-    private final ParishRepository parishRepository;
+    private static final int[] SCALES = {100, 1_000, 100_000};
 
     // ===========================================================
     // ÖFFENTLICHE METHODEN – werden vom Controller aufgerufen
     // ===========================================================
 
-    /**
-     * Komplettes Szenario: Write + Reads + Update + Delete<br>
-     * Method should not be used, since read times are not optimized and are not comparable<br>
-     * Instead call each distinctly and aggregate after
-     * */
-    @Transactional()
-    @Deprecated(forRemoval = false)
-    public AllTestOutputDto runAllBenchmarks() {
-        System.out.println("=== BENCHMARK (ALL) STARTED ===");
-
-        AllTestOutputDto outputDto = null;
-
-        for (int n : SCALES) {
-            System.out.println();
-            System.out.println("========== SCALE n = " + n + " ==========");
-
-            // DB zurücksetzen
-            parishionerRepository.deleteAll();
-            parishDocumentRepository.deleteAll();
-
-            WriteTestOutputDto writeTestOutputDto = runWritesForScale(n);
-            ReadTestOutputDto readTestOutputDto = runReadsForScale();
-            UpdateTestOutputDto updateTestOutputDto = runUpdatesForScale();
-            DeleteTestOutputDto deleteTestOutputDto = runDeletesForScale();
-
-            outputDto = new AllTestOutputDto(
-                    writeTestOutputDto,
-                    readTestOutputDto,
-                    updateTestOutputDto,
-                    deleteTestOutputDto
-            );
-        }
-
-        System.out.println();
-        System.out.println("=== BENCHMARK (ALL) FINISHED ===");
-
-        return outputDto;
-    }
-
     /** Nur Writes (inkl. Reset davor) */
     @Transactional()
-    public WriteTestOutputDto runWriteBenchmarks() {
+    public Map<Integer, WriteTestOutputDto> runWriteBenchmarks() {
         System.out.println("=== WRITE BENCHMARKS STARTED ===");
 
-        WriteTestOutputDto outputDto = null;
+        Map<Integer, WriteTestOutputDto> output = new HashMap<>();
 
         for (int n : SCALES) {
             System.out.println();
             System.out.println("========== SCALE n = " + n + " ==========");
 
-            parishionerRepository.deleteAll();
-            parishDocumentRepository.deleteAll();
-
-            outputDto = runWritesForScale(n);
+            output.put(n, runWritesForScale(n));
         }
 
         System.out.println();
         System.out.println("=== WRITE BENCHMARKS FINISHED ===");
 
-        return outputDto;
+        return output;
     }
 
     /** Nur Reads – erwartet, dass vorher Daten geschrieben wurden */
     @Transactional(readOnly = true)
-    public ReadTestOutputDto runReadBenchmarks() {
+    public Map<Integer, ReadTestOutputDto> runReadBenchmarks() {
         System.out.println("=== READ BENCHMARKS STARTED ===");
 
-        ReadTestOutputDto outputDto = null;
+        Map<Integer, ReadTestOutputDto> output = new HashMap<>();
 
         for (int n : SCALES) {
             System.out.println();
             System.out.println("NOTE: expects existing data, scale label = " + n);
 
-            outputDto = runReadsForScale();
+            output.put(n, runReadsForScale());
         }
         System.out.println();
         System.out.println("=== READ BENCHMARKS FINISHED ===");
 
-        return outputDto;
+        return output;
     }
 
     /** Nur Updates – erwartet vorhandene Daten */
@@ -123,14 +75,10 @@ public class BenchmarkRunner {
     public UpdateTestOutputDto runUpdateBenchmarks() {
         System.out.println("=== UPDATE BENCHMARKS STARTED ===");
 
-        UpdateTestOutputDto outputDto = null;
+        System.out.println();
+        System.out.println("NOTE: expects existing data");
 
-        for (int n : SCALES) {
-            System.out.println();
-            System.out.println("NOTE: expects existing data, scale label = " + n);
-
-            outputDto = runUpdatesForScale();
-        }
+        UpdateTestOutputDto outputDto = runUpdatesForScale();
 
         System.out.println();
         System.out.println("=== UPDATE BENCHMARKS FINISHED ===");
@@ -143,18 +91,44 @@ public class BenchmarkRunner {
     public DeleteTestOutputDto runDeleteBenchmarks() {
         System.out.println("=== DELETE BENCHMARKS STARTED ===");
 
-        DeleteTestOutputDto outputDto = null;
+        System.out.println();
+        System.out.println("NOTE: deleteAll");
 
-        for (int n : SCALES) {
-            System.out.println();
-            System.out.println("NOTE: deleteAll – scale label = " + n);
+        DeleteTestOutputDto outputDto = runDeletesForScale();
 
-            outputDto = runDeletesForScale();
-        }
         System.out.println();
         System.out.println("=== DELETE BENCHMARKS FINISHED ===");
 
         return outputDto;
+    }
+
+    public MongoIndexTestOutputDto runMongoIndexBenchmarks() {
+        System.out.println("=== MONGO INDEX BENCHMARKS STARTED ===");
+
+        int approxMaxEntries = Arrays.stream(SCALES).max().getAsInt();
+
+        Random r = new Random();
+        int year = 1970 + r.nextInt(approxMaxEntries);
+
+        int iterations = 10;
+        long timeNoIndex = 0;
+        long timeWithIndex = 0;
+
+        for (int i = 0; i < iterations; i++) {
+            timeNoIndex += measureMillis(() -> findMongoWithoutIndex(year));
+            timeWithIndex += measureMillis(() -> findMongoWithIndex(year));
+        }
+
+        timeNoIndex /= iterations;
+        timeWithIndex /= iterations;
+
+        System.out.println("-- FIND: without/with index");
+        System.out.println("MongoDB without Index time : " + timeNoIndex + " ms");
+        System.out.println("MongoDB with Index time : " + timeWithIndex + " ms");
+
+        System.out.println("=== MONGO INDEX BENCHMARKS FINISHED ===");
+
+        return new MongoIndexTestOutputDto(timeNoIndex, timeWithIndex);
     }
 
     // ===========================================================
@@ -162,8 +136,8 @@ public class BenchmarkRunner {
     // ===========================================================
 
     private WriteTestOutputDto runWritesForScale(int n) {
-        long pgWrite = measureMillis(() -> writeParishionersPostgres(n));
-        long mongoWrite = measureMillis(() -> writeParishionersMongo(n));
+        long pgWrite = measureMillis(() -> writeParishesPostgres(n));
+        long mongoWrite = measureMillis(() -> writeParishesMongo(n));
 
         System.out.println("-- WRITE");
         System.out.println("Postgres write time : " + pgWrite + " ms");
@@ -221,7 +195,7 @@ public class BenchmarkRunner {
 
     private DeleteTestOutputDto runDeletesForScale() {
         System.out.println("-- DELETE ALL");
-        long pgDelete = measureMillis(parishionerRepository::deleteAll);
+        long pgDelete = measureMillis(parishRepository::deleteAll);
         long mongoDelete = measureMillis(parishDocumentRepository::deleteAll);
         System.out.println("Postgres deleteAll time : " + pgDelete + " ms");
         System.out.println("MongoDB  deleteAll time : " + mongoDelete + " ms");
@@ -244,94 +218,91 @@ public class BenchmarkRunner {
     // WRITE-OPERATIONEN
     // ===========================================================
 
-    private void writeParishionersPostgres(int n) {
-        List<Parishioner> parishioners = new ArrayList<>();
+    private void writeParishesPostgres(int n) {
+        List<Parish> parish = new ArrayList<>();
 
         for (int i = 0; i < n; i++) {
-            Parishioner p = Parishioner.builder()
-                    .firstName("PG_First_" + i)
-                    .lastName("PG_Last_" + (i % 100))  // 0..99 für Filter
-                    .birthDate(LocalDate.of(1990, 1, 1).plusDays(i % 365))
+            int year = 1970 + i;
+
+            Parish p = Parish.builder()
+                    .name("PG_Name_" + i)
+                    .location("PG_Location_" + i)
+                    .foundedYear(year)
                     .build();
 
-            parishioners.add(p);
+            parish.add(p);
         }
 
-        parishionerRepository.saveAll(parishioners);
+        parishRepository.saveAll(parish);
     }
 
-    private void writeParishionersMongo(int n) {
-        ParishDocument parishDoc = ParishDocument.builder()
-                .id(new ObjectId())
-                .name("Benchmark Parish")
-                .location("Vienna")
-                .foundedYear(1900)
-                .build();
+    private void writeParishesMongo(int n) {
+        List<ParishDocument> parishDocuments = new ArrayList<>();
 
         for (int i = 0; i < n; i++) {
-            ParishionerEmbedded emb = ParishionerEmbedded.builder()
+            int year = 1970 + (i % 50);
+
+            ParishDocument parishDoc = ParishDocument.builder()
                     .id(new ObjectId())
-                    .firstName("MG_First_" + i)
-                    .lastName("MG_Last_" + (i % 100))
-                    .birthDate(LocalDate.of(1990, 1, 1).plusDays(i % 365))
+                    .name("MG_Name_" + i)
+                    .location("MG_Location_" + i)
+                    .foundedYear(year)
+                    .foundedYearIndexed(year)
                     .build();
 
-            parishDoc.getParishioners().add(emb);
+            parishDocuments.add(parishDoc);
         }
 
-        parishDocumentRepository.save(parishDoc);
+        parishDocumentRepository.insert(parishDocuments);
     }
 
     // ===========================================================
     // READ-Helfer
     // ===========================================================
 
-    private List<Parishioner> readAllPostgres() {
-        return parishionerRepository.findAll();
+    private List<Parish> readAllPostgres() {
+        return parishRepository.findAll();
     }
 
-    private List<ParishionerEmbedded> readAllMongo() {
-        return parishDocumentRepository.findAll()
-                .stream()
-                .flatMap(doc -> doc.getParishioners().stream())
-                .toList();
+    private List<ParishDocument> readAllMongo() {
+        return parishDocumentRepository.findAll();
     }
 
-    private List<Parishioner> readFilteredPostgres() {
+    private List<Parish> readFilteredPostgres() {
         return readAllPostgres().stream()
-                .filter(p -> "PG_Last_42".equals(p.getLastName()))
+                .filter(p -> "PG_Name_42".equals(p.getName()))
                 .toList();
     }
 
-    private List<ParishionerEmbedded> readFilteredMongo() {
+    private List<ParishDocument> readFilteredMongo() {
         return readAllMongo().stream()
-                .filter(p -> "MG_Last_42".equals(p.getLastName()))
+                .filter(p -> "MG_Name_42".equals(p.getName()))
                 .toList();
     }
 
     private List<String> readFilteredProjectedPostgres() {
         return readFilteredPostgres().stream()
-                .map(p -> p.getFirstName() + " " + p.getLastName())
+                .map(Parish::getName)
                 .toList();
     }
 
     private List<String> readFilteredProjectedMongo() {
         return readFilteredMongo().stream()
-                .map(p -> p.getFirstName() + " " + p.getLastName())
+                .map(ParishDocument::getName)
                 .toList();
     }
 
     private List<String> readFilteredProjectedSortedPostgres() {
         return readFilteredPostgres().stream()
-                .sorted(Comparator.comparing(Parishioner::getFirstName))
-                .map(p -> p.getFirstName() + " " + p.getLastName())
+                .sorted(Comparator.comparing(Parish::getName))
+                .map(Parish::getName)
                 .toList();
     }
 
     private List<String> readFilteredProjectedSortedMongo() {
         return readFilteredMongo().stream()
-                .sorted(Comparator.comparing(ParishionerEmbedded::getFirstName))
-                .map(p -> p.getFirstName() + " " + p.getLastName())
+                .sorted(Comparator.comparing(ParishDocument::getName))
+                .map(ParishDocument::getName)
                 .toList();
     }
 
@@ -340,13 +311,25 @@ public class BenchmarkRunner {
     // ===========================================================
 
     private void updateAllPostgres() {
-        parishionerRepository.updateAllParishioners();
+        parishRepository.updateAllParishes();
     }
 
     private void updateAllMongo() {
         Query query = new Query();
-        Update update = new Update().set("parishioners.$[].firstName", "UPDATED");
+        Update update = new Update().set("name", "UPDATED");
 
         UpdateResult result = mongoTemplate.updateMulti(query, update, ParishDocument.class);
+    }
+
+    // ===========================================================
+    // MONGO INDEX
+    // ===========================================================
+
+    private void findMongoWithoutIndex(int foundedYear) {
+        parishDocumentRepository.findByFoundedYear(foundedYear);
+    }
+
+    private void findMongoWithIndex(int foundedYear) {
+        parishDocumentRepository.findByFoundedYearIndexed(foundedYear);
     }
 }
