@@ -1,0 +1,207 @@
+@use '@fontsource-variable/inter';
+
+:root {
+  --text-color: 251, 251, 251;
+}
+
+/* Basis-Typo / Rendering */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  text-rendering: optimizeLegibility;
+  font-kerning: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------------------------------ */
+/* WRAPPER */
+/* ------------------------------ */
+
+.dash-root {
+  padding: 2.5rem 1.5rem 3rem;
+  display: flex;
+  justify-content: center;
+  color: rgb(var(--text-color));
+}
+
+.dash-wrapper {
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* ------------------------------ */
+/* HEADER */
+/* ------------------------------ */
+
+.dash-header {
+  margin-bottom: 2rem;
+}
+
+.dash-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0.4rem 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+/* ------------------------------ */
+/* GRID LAYOUT */
+/* ------------------------------ */
+
+.dash-main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.card--bench {
+  grid-column: 1 / 3; /* full width */
+}
+
+/* ------------------------------ */
+/* CARD STYLE */
+/* ------------------------------ */
+
+.card {
+  background: radial-gradient(circle at top left, #262638 0, #171720 45%, #12121a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem 1.75rem;
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.card-desc {
+  margin: 0.5rem 0 1.2rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.9rem;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* small tag in corner of cards */
+
+.card-tag {
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 200, 255, 0.4);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(180, 230, 255, 0.9);
+}
+
+.card-tag--pg {
+  border-color: rgba(0, 200, 255, 0.5);
+  color: rgba(160, 220, 255, 0.95);
+}
+
+.card-tag--mg {
+  border-color: rgba(255, 0, 150, 0.5);
+  color: rgba(255, 190, 230, 0.95);
+}
+
+/* ------------------------------ */
+/* LINK LIST */
+/* ------------------------------ */
+
+.link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.link-item {
+  display: block;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.link-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.link-title {
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.link-subtitle {
+  margin-top: 0.18rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ------------------------------ */
+/* BENCHMARK CARD CTA */
+/* ------------------------------ */
+
+.bench-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.bench-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+
+  background: linear-gradient(to right, rgba(0, 200, 255, 0.85), rgba(255, 0, 150, 0.9));
+  color: #fff;
+  border: 0;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.bench-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.75);
+}
+
+/* ------------------------------ */
+/* RESPONSIVE */
+/* ------------------------------ */
+
+@media (max-width: 900px) {
+  .dash-root {
+    padding: 2rem 1.1rem 2.5rem;
+  }
+
+  .dash-main {
+    grid-template-columns: 1fr;
+  }
+
+  .card--bench {
+    grid-column: 1 / 2;
+  }
+}

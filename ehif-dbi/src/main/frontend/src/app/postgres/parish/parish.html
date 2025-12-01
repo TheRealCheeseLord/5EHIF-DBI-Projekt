@@ -1,0 +1,144 @@
+<div class="page-root">
+  <div class="page-wrapper">
+    <header class="page-header">
+      <h1>PostgreSQL – Parishes</h1>
+      <p>Simple CRUD playground for the Parish table.</p>
+    </header>
+
+    <div class="card">
+      <div class="card-header-row">
+        <h2>All Parishes</h2>
+
+        <div class="card-header-actions">
+          <button class="btn" type="button" (click)="openCreate()">+ New Parish</button>
+        </div>
+      </div>
+
+      <p class="error" *ngIf="error">{{ error }}</p>
+
+      <p *ngIf="!loading && !error && parishes.length === 0">No parishes found yet.</p>
+
+      <table class="table" *ngIf="parishes.length">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Location</th>
+          <th>Founded</th>
+          <th class="actions-cell">Actions</th>
+        </tr>
+
+        <tr *ngFor="let p of parishes">
+          <td>{{ p.id }}</td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.location }}</td>
+          <td>{{ p.foundedYear }}</td>
+
+          <td class="actions-cell">
+            <button class="btn small" type="button" (click)="openEdit(p)">Edit</button>
+            <button class="btn small danger" type="button" (click)="delete(p)">Delete</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- FORM MODAL -->
+    <div class="modal" *ngIf="showForm">
+      <div class="modal-content">
+        <div class="modal-header-row">
+          <h2>{{ editMode ? 'Edit parish' : 'Create parish' }}</h2>
+          <button type="button" class="icon-btn" (click)="close()">✕</button>
+        </div>
+
+        <form (ngSubmit)="save()">
+          <label>
+            Name
+            <input type="text" [(ngModel)]="form.name" name="name" required />
+          </label>
+
+          <label>
+            Location
+            <input type="text" [(ngModel)]="form.location" name="location" />
+          </label>
+
+          <label>
+            Founded year
+            <input type="number" [(ngModel)]="form.foundedYear" name="foundedYear" />
+          </label>
+
+          <div class="modal-actions">
+            <button type="submit" class="btn">
+              {{ editMode ? 'Save' : 'Create' }}
+            </button>
+            <button type="button" class="btn secondary" (click)="close()">Cancel</button>
+          </div>
+
+          <!-- RELATIONS (only when editing existing parish) -->
+          <div class="relations-section" *ngIf="editMode && form.id">
+            <div class="relations-header">
+              <h3>Relations</h3>
+              <span *ngIf="relationsLoading" class="relations-loading"> Loading relations… </span>
+            </div>
+
+            <!-- PRIESTS -->
+            <section class="relations-block">
+              <h4>Priests</h4>
+
+              <ul class="relations-list" *ngIf="priests.length; else noPriests">
+                <li *ngFor="let pr of priests">
+                  <span>{{ pr.firstName }} {{ pr.lastName }}</span>
+                  <button type="button" class="btn small secondary" (click)="removePriest(pr)">
+                    Remove
+                  </button>
+                </li>
+              </ul>
+
+              <ng-template #noPriests>
+                <p class="relations-empty">No priests linked yet.</p>
+              </ng-template>
+
+              <div class="inline-row">
+                <input
+                  type="number"
+                  [(ngModel)]="newPriestId"
+                  name="newPriestId"
+                  placeholder="Priest ID"
+                />
+                <button type="button" class="btn small" (click)="addPriest()">Add priest</button>
+              </div>
+            </section>
+
+            <!-- PARISHIONERS -->
+            <section class="relations-block">
+              <h4>Parishioners</h4>
+
+              <ul class="relations-list" *ngIf="parishioners.length; else noParishioners">
+                <li *ngFor="let pa of parishioners">
+                  <span>{{ pa.firstName }} {{ pa.lastName }}</span>
+                  <button type="button" class="btn small secondary" (click)="removeParishioner(pa)">
+                    Remove
+                  </button>
+                </li>
+              </ul>
+
+              <ng-template #noParishioners>
+                <p class="relations-empty">No parishioners linked yet.</p>
+              </ng-template>
+
+              <div class="inline-row">
+                <input
+                  type="number"
+                  [(ngModel)]="newParishionerId"
+                  name="newParishionerId"
+                  placeholder="Parishioner ID"
+                />
+                <button type="button" class="btn small" (click)="addParishioner()">
+                  Add parishioner
+                </button>
+              </div>
+            </section>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

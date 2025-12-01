@@ -1,0 +1,60 @@
+<div class="page-root">
+  <div class="page-wrapper">
+    <header class="page-header">
+      <h1>PostgreSQL – Parishioners</h1>
+      <p>Manage all parishioners stored in the PostgreSQL database.</p>
+    </header>
+
+    <div class="card">
+      <div class="card-header-row">
+        <h2>All Parishioners</h2>
+        <button class="btn" (click)="openAdd()">+ Add Parishioner</button>
+      </div>
+
+      <table class="table">
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Birthdate</th>
+          <th>Actions</th>
+        </tr>
+
+        <tr *ngFor="let p of parishioners">
+          <td>{{ p.id }}</td>
+          <td>{{ p.firstName }} {{ p.lastName }}</td>
+          <td>{{ p.birthDate }}</td>
+
+          <td class="actions-cell">
+            <button class="btn small" (click)="openEdit(p)">Edit</button>
+            <button class="btn small danger" (click)="delete(p.id!)">Delete</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- FORM MODAL -->
+    <div class="modal" *ngIf="showForm">
+      <div class="modal-content">
+        <h2>{{ editMode ? 'Edit parishioner' : 'Create parishioner' }}</h2>
+
+        <form (ngSubmit)="save()">
+          <label>First Name</label>
+          <input type="text" [(ngModel)]="form.firstName" name="firstName" required />
+
+          <label>Last Name</label>
+          <input type="text" [(ngModel)]="form.lastName" name="lastName" required />
+
+          <label>Birthdate</label>
+          <input type="date" [(ngModel)]="form.birthDate" name="birthDate" required />
+
+          <div class="modal-actions">
+            <button type="submit" class="btn">
+              {{ editMode ? 'Save' : 'Create' }}
+            </button>
+            <button type="button" class="btn secondary" (click)="close()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

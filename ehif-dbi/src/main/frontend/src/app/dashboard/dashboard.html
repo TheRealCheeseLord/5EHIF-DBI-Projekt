@@ -1,1 +1,76 @@
-<p>dashboard works!</p>
+<div class="dash-root">
+  <div class="dash-wrapper">
+    <header class="dash-header">
+      <h1>Database Dashboard</h1>
+      <p class="subtitle">
+        Navigate between Postgres and MongoDB entities, or run performance benchmarks.
+      </p>
+    </header>
+
+    <section class="dash-main">
+      <!-- POSTGRES COLUMN -->
+      <div class="card card--cluster">
+        <div class="card-header-row">
+          <h2>Postgres</h2>
+          <span class="card-tag card-tag--pg">Relational</span>
+        </div>
+        <p class="card-desc">
+          Classic relational model with normalized tables for parishes, parishioners and priests.
+        </p>
+
+        <div class="link-list">
+          <a routerLink="/postgres/parishes" class="link-item">
+            <div class="link-title">Parishes</div>
+            <div class="link-subtitle">List and manage all parishes.</div>
+          </a>
+
+          <a routerLink="/postgres/parishioners" class="link-item">
+            <div class="link-title">Parishioners</div>
+            <div class="link-subtitle">CRUD for individual parishioner records.</div>
+          </a>
+
+          <a routerLink="/postgres/priests" class="link-item">
+            <div class="link-title">Priests</div>
+            <div class="link-subtitle">Manage priests and their assignments.</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- MONGODB COLUMN -->
+      <div class="card card--cluster">
+        <div class="card-header-row">
+          <h2>MongoDB</h2>
+          <span class="card-tag card-tag--mg">Document</span>
+        </div>
+        <p class="card-desc">
+          Embedded document structure with parish documents and nested members.
+        </p>
+
+        <div class="link-list">
+          <a routerLink="/mongo/parish-documents" class="link-item">
+            <div class="link-title">Parish Documents</div>
+            <div class="link-subtitle">
+              Manage parish documents with embedded priests and parishioners.
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- BENCHMARK CARD (FULL-WIDTH) -->
+      <div class="card card--bench">
+        <div class="card-header-row">
+          <h2>Benchmarks</h2>
+          <span class="card-tag">Comparison</span>
+        </div>
+        <p class="card-desc">
+          Run write, read, update and delete benchmarks and visualize the performance difference
+          between Postgres and MongoDB.
+        </p>
+
+        <div class="bench-actions">
+          <a routerLink="benchmark" class="bench-link">Open benchmark view</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
