@@ -3,6 +3,8 @@ package at.spengergasse.ehif_dbi.benchmark;
 import at.spengergasse.ehif_dbi.benchmark.dto.*;
 import at.spengergasse.ehif_dbi.domain.mongo.ParishDocument;
 import at.spengergasse.ehif_dbi.domain.postgres.Parish;
+import at.spengergasse.ehif_dbi.dtos.mongo.ParishDocumentSummaryDto;
+import at.spengergasse.ehif_dbi.dtos.postgres.ParishSummaryDto;
 import at.spengergasse.ehif_dbi.persistence.mongo.ParishDocumentRepository;
 import at.spengergasse.ehif_dbi.persistence.postgres.ParishRepository;
 import com.mongodb.client.result.UpdateResult;
@@ -147,6 +149,11 @@ public class BenchmarkRunner {
     }
 
     private ReadTestOutputDto runReadsForScale() {
+        int approxMaxEntries = Arrays.stream(SCALES).max().getAsInt();
+        Random r = new Random();
+        int maxFoundedYear = r.nextInt(approxMaxEntries);
+        int minFoundedYear = maxFoundedYear / 10;
+
         System.out.println("-- READ: find all");
         long pgReadAll = measureMillis(this::readAllPostgres);
         long mongoReadAll = measureMillis(this::readAllMongo);
@@ -154,20 +161,20 @@ public class BenchmarkRunner {
         System.out.println("MongoDB  readAll time : " + mongoReadAll + " ms");
 
         System.out.println("-- READ: with filter (lastName)");
-        long pgReadFilter = measureMillis(this::readFilteredPostgres);
-        long mongoReadFilter = measureMillis(this::readFilteredMongo);
+        long pgReadFilter = measureMillis(() -> readFilteredPostgres(minFoundedYear, maxFoundedYear));
+        long mongoReadFilter = measureMillis(() -> readFilteredMongo(minFoundedYear, maxFoundedYear));
         System.out.println("Postgres readFiltered time : " + pgReadFilter + " ms");
         System.out.println("MongoDB  readFiltered time : " + mongoReadFilter + " ms");
 
         System.out.println("-- READ: with filter + projection");
-        long pgReadProj = measureMillis(this::readFilteredProjectedPostgres);
-        long mongoReadProj = measureMillis(this::readFilteredProjectedMongo);
+        long pgReadProj = measureMillis(() -> readFilteredProjectedPostgres(minFoundedYear, maxFoundedYear));
+        long mongoReadProj = measureMillis(() -> readFilteredProjectedMongo(minFoundedYear, maxFoundedYear));
         System.out.println("Postgres readFiltered+Proj time : " + pgReadProj + " ms");
         System.out.println("MongoDB  readFiltered+Proj time : " + mongoReadProj + " ms");
 
         System.out.println("-- READ: with filter + projection + sort");
-        long pgReadProjSort = measureMillis(this::readFilteredProjectedSortedPostgres);
-        long mongoReadProjSort = measureMillis(this::readFilteredProjectedSortedMongo);
+        long pgReadProjSort = measureMillis(() -> readFilteredProjectedSortedPostgres(minFoundedYear, maxFoundedYear));
+        long mongoReadProjSort = measureMillis(() -> readFilteredProjectedSortedMongo(minFoundedYear, maxFoundedYear));
         System.out.println("Postgres readFiltered+Proj+Sort time : " + pgReadProjSort + " ms");
         System.out.println("MongoDB  readFiltered+Proj+Sort time : " + mongoReadProjSort + " ms");
 
@@ -274,42 +281,28 @@ public class BenchmarkRunner {
         return parishDocumentRepository.findAll();
     }
 
-    private List<Parish> readFilteredPostgres() {
-        return readAllPostgres().stream()
-                .filter(p -> "PG_Name_42".equals(p.getName()))
-                .toList();
+    private List<Parish> readFilteredPostgres(int minFoundedYear, int maxFoundedYear) {
+        return parishRepository.findAllByFoundedYearBetween(minFoundedYear, maxFoundedYear);
     }
 
-    private List<ParishDocument> readFilteredMongo() {
-        return readAllMongo().stream()
-                .filter(p -> "MG_Name_42".equals(p.getName()))
-                .toList();
+    private List<ParishDocument> readFilteredMongo(int minFoundedYear, int maxFoundedYear) {
+        return parishDocumentRepository.findAllByFoundedYearBetween(minFoundedYear, maxFoundedYear);
     }
 
-    private List<String> readFilteredProjectedPostgres() {
-        return readFilteredPostgres().stream()
-                .map(Parish::getName)
-                .toList();
+    private List<ParishSummaryDto> readFilteredProjectedPostgres(int minFoundedYear, int maxFoundedYear) {
+        return parishRepository.findAllProjectedByFoundedYearBetween(minFoundedYear, maxFoundedYear);
     }
 
-    private List<String> readFilteredProjectedMongo() {
-        return readFilteredMongo().stream()
-                .map(ParishDocument::getName)
-                .toList();
+    private List<ParishDocumentSummaryDto> readFilteredProjectedMongo(int minFoundedYear, int maxFoundedYear) {
+        return parishDocumentRepository.findAllProjectedByFoundedYearBetween(minFoundedYear, maxFoundedYear);
     }
 
-    private List<String> readFilteredProjectedSortedPostgres() {
-        return readFilteredPostgres().stream()
-                .sorted(Comparator.comparing(Parish::getName))
-                .map(Parish::getName)
-                .toList();
+    private List<ParishSummaryDto> readFilteredProjectedSortedPostgres(int minFoundedYear, int maxFoundedYear) {
+        return parishRepository.findAllProjectedByFoundedYearBetweenOrderByFoundedYearDesc(minFoundedYear, maxFoundedYear);
     }
 
-    private List<String> readFilteredProjectedSortedMongo() {
-        return readFilteredMongo().stream()
-                .sorted(Comparator.comparing(ParishDocument::getName))
-                .map(ParishDocument::getName)
-                .toList();
+    private List<ParishDocumentSummaryDto> readFilteredProjectedSortedMongo(int minFoundedYear, int maxFoundedYear) {
+        return parishDocumentRepository.findAllProjectedByFoundedYearBetweenOrderByFoundedYearDesc(minFoundedYear, maxFoundedYear);
     }
 
     // ===========================================================
