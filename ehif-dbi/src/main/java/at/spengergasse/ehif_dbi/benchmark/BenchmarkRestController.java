@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping(value = "/api/benchmarks", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
@@ -16,32 +18,15 @@ public class BenchmarkRestController {
 
     private final BenchmarkRunner benchmarkRunner;
 
-    /**
-     * WARNING: This endpoint is primarily for convenience and is NOT recommended for accurate benchmarking.
-     * Each benchmark (writes, reads, updates, deletes) should be run individually via their own endpoints
-     * and aggregated externally for correct timing measurements.
-     */
-    @Operation(
-            summary = "Run all benchmarks (not recommended)",
-            description = "This endpoint calls all benchmarks in one request. "
-                    + "For accurate timing, each benchmark should be called individually "
-                    + "and results aggregated externally.",
-            deprecated = true
-    )
-    @GetMapping("/run-all")
-    public ResponseEntity<AllTestOutputDto> runAll() {
-        return ResponseEntity.ok(benchmarkRunner.runAllBenchmarks());
-    }
-
     @Operation(summary = "Run write benchmarks")
     @GetMapping("/writes")
-    public ResponseEntity<WriteTestOutputDto> runWrites() {
+    public ResponseEntity<Map<Integer, WriteTestOutputDto>> runWrites() {
         return ResponseEntity.ok(benchmarkRunner.runWriteBenchmarks());
     }
 
     @Operation(summary = "Run read benchmarks")
     @GetMapping("/reads")
-    public ResponseEntity<ReadTestOutputDto> runReads() {
+    public ResponseEntity<Map<Integer, ReadTestOutputDto>> runReads() {
         return ResponseEntity.ok(benchmarkRunner.runReadBenchmarks());
     }
 
@@ -55,5 +40,11 @@ public class BenchmarkRestController {
     @GetMapping("/deletes")
     public ResponseEntity<DeleteTestOutputDto> runDeletes() {
         return ResponseEntity.ok(benchmarkRunner.runDeleteBenchmarks());
+    }
+
+    @Operation(summary = "Run mongo find query with/without index comparisons")
+    @GetMapping("/mongo-index")
+    public ResponseEntity<MongoIndexTestOutputDto> runMongoIndex() {
+        return ResponseEntity.ok(benchmarkRunner.runMongoIndexBenchmarks());
     }
 }
