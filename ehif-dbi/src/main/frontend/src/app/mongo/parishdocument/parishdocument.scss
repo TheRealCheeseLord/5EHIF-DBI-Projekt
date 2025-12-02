@@ -94,7 +94,6 @@ table {
 }
 
 /* buttons */
-
 .btn {
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -139,7 +138,6 @@ table {
 }
 
 /* modal */
-
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -226,7 +224,6 @@ input {
 }
 
 /* relations section */
-
 .relations-section {
   margin-top: 1.5rem;
   padding-top: 1.2rem;
@@ -250,6 +247,12 @@ input {
       font-size: 0.85rem;
     }
   }
+}
+
+.relations-empty {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 0.6rem;
 }
 
 .inline-form {

@@ -1,0 +1,148 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>Mongo · Parish Documents</h1>
+      <p class="subtitle">CRUD playground for the parishDocument collection.</p>
+    </div>
+
+    <button class="btn primary" type="button" (click)="openCreate()">New document</button>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <h2>Existing documents</h2>
+      <span class="badge" *ngIf="loading">Loading…</span>
+    </div>
+
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <p *ngIf="!loading && !error && documents.length === 0">No documents found yet.</p>
+
+    <div class="table-wrapper" *ngIf="documents.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Founded</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let d of documents">
+            <td>{{ d.id }}</td>
+            <td>{{ d.name }}</td>
+            <td>{{ d.location }}</td>
+            <td>{{ d.foundedYear }}</td>
+
+            <td class="col-actions">
+              <button class="btn ghost btn-small" type="button" (click)="openEdit(d)">Edit</button>
+              <button class="btn danger btn-small" type="button" (click)="delete(d)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" *ngIf="showForm">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>{{ editMode ? 'Edit document' : 'Create document' }}</h2>
+        <button type="button" class="icon-btn" (click)="close()">✕</button>
+      </div>
+
+      <form (ngSubmit)="save()">
+        <label>
+          <span>Name</span>
+          <input type="text" [(ngModel)]="form.name" name="name" required />
+        </label>
+
+        <label>
+          <span>Location</span>
+          <input type="text" [(ngModel)]="form.location" name="location" />
+        </label>
+
+        <label>
+          <span>Founded year</span>
+          <input type="number" [(ngModel)]="form.foundedYear" name="foundedYear" />
+        </label>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn primary">
+            {{ editMode ? 'Save' : 'Create' }}
+          </button>
+          <button type="button" class="btn ghost" (click)="close()">Cancel</button>
+        </div>
+
+        <!-- RELATIONS -->
+        <div class="relations-section" *ngIf="editMode && form.id">
+          <h3>Priests</h3>
+
+          <ul *ngIf="priests.length > 0">
+            <li *ngFor="let pr of priests">
+              <span>{{ pr.firstName }} {{ pr.lastName }}</span>
+              <button class="btn ghost btn-small" type="button" (click)="removePriest(pr)">
+                Remove
+              </button>
+            </li>
+          </ul>
+
+          <div class="inline-form">
+            <input
+              type="text"
+              [(ngModel)]="newPriestFirst"
+              name="newPriestFirst"
+              placeholder="First name"
+            />
+            <input
+              type="text"
+              [(ngModel)]="newPriestLast"
+              name="newPriestLast"
+              placeholder="Last name"
+            />
+            <input type="date" [(ngModel)]="newPriestOrdination" name="newPriestOrdination" />
+
+            <button type="button" class="btn primary btn-small" (click)="addPriest()">
+              Add priest
+            </button>
+          </div>
+
+          <h3 style="margin-top: 1.3rem">Parishioners</h3>
+
+          <ul *ngIf="parishioners.length > 0">
+            <li *ngFor="let pa of parishioners">
+              <span>{{ pa.firstName }} {{ pa.lastName }}</span>
+              <button class="btn ghost btn-small" type="button" (click)="removeParishioner(pa)">
+                Remove
+              </button>
+            </li>
+          </ul>
+
+          <div class="inline-form">
+            <input
+              type="text"
+              [(ngModel)]="newParishionerFirst"
+              name="newParishionerFirst"
+              placeholder="First name"
+            />
+            <input
+              type="text"
+              [(ngModel)]="newParishionerLast"
+              name="newParishionerLast"
+              placeholder="Last name"
+            />
+            <input type="date" [(ngModel)]="newParishionerBirth" name="newParishionerBirth" />
+
+            <button type="button" class="btn primary btn-small" (click)="addParishioner()">
+              Add parishioner
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
