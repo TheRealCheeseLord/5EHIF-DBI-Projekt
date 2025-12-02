@@ -14,11 +14,12 @@
         </div>
       </div>
 
-      <p class="error" *ngIf="error">{{ error }}</p>
-
-      <p *ngIf="!loading && !error && parishes.length === 0">No parishes found yet.</p>
-
-      <table class="table" *ngIf="parishes.length">
+      @if (error()) {
+      <p class="error">{{ error() }}</p>
+      } @if (!loading() && !error() && parishes().length === 0) {
+      <p>No parishes found yet.</p>
+      } @if (parishes().length > 0) {
+      <table class="table">
         <tr>
           <th>ID</th>
           <th>Name</th>
@@ -27,7 +28,8 @@
           <th class="actions-cell">Actions</th>
         </tr>
 
-        <tr *ngFor="let p of parishes">
+        @for (p of parishes(); track p.id) {
+        <tr>
           <td>{{ p.id }}</td>
           <td>{{ p.name }}</td>
           <td>{{ p.location }}</td>
@@ -38,69 +40,77 @@
             <button class="btn small danger" type="button" (click)="delete(p)">Delete</button>
           </td>
         </tr>
+        }
       </table>
+      }
     </div>
 
     <!-- FORM MODAL -->
-    <div class="modal" *ngIf="showForm">
+    @if (showForm()) {
+    <div class="modal">
       <div class="modal-content">
         <div class="modal-header-row">
-          <h2>{{ editMode ? 'Edit parish' : 'Create parish' }}</h2>
+          <h2>{{ editMode() ? 'Edit parish' : 'Create parish' }}</h2>
           <button type="button" class="icon-btn" (click)="close()">✕</button>
         </div>
 
-        <form (ngSubmit)="save()">
+        <form [formGroup]="form" (ngSubmit)="save()">
           <label>
             Name
-            <input type="text" [(ngModel)]="form.name" name="name" required />
+            <input type="text" formControlName="name" required />
           </label>
 
           <label>
             Location
-            <input type="text" [(ngModel)]="form.location" name="location" />
+            <input type="text" formControlName="location" />
           </label>
 
           <label>
             Founded year
-            <input type="number" [(ngModel)]="form.foundedYear" name="foundedYear" />
+            <input type="number" formControlName="foundedYear" />
           </label>
 
           <div class="modal-actions">
             <button type="submit" class="btn">
-              {{ editMode ? 'Save' : 'Create' }}
+              {{ editMode() ? 'Save' : 'Create' }}
             </button>
             <button type="button" class="btn secondary" (click)="close()">Cancel</button>
           </div>
 
-          <!-- RELATIONS (only when editing existing parish) -->
-          <div class="relations-section" *ngIf="editMode && form.id">
+          <!-- RELATIONS -->
+          @if (editMode() && form.value.id) {
+          <div class="relations-section">
             <div class="relations-header">
               <h3>Relations</h3>
-              <span *ngIf="relationsLoading" class="relations-loading"> Loading relations… </span>
+              @if (relationsLoading()) {
+              <span class="relations-loading">Loading relations…</span>
+              }
             </div>
 
             <!-- PRIESTS -->
             <section class="relations-block">
               <h4>Priests</h4>
 
-              <ul class="relations-list" *ngIf="priests.length; else noPriests">
-                <li *ngFor="let pr of priests">
+              @if (priests().length > 0) {
+              <ul class="relations-list">
+                @for (pr of priests(); track pr.id) {
+                <li>
                   <span>{{ pr.firstName }} {{ pr.lastName }}</span>
                   <button type="button" class="btn small secondary" (click)="removePriest(pr)">
                     Remove
                   </button>
                 </li>
+                }
               </ul>
-
-              <ng-template #noPriests>
-                <p class="relations-empty">No priests linked yet.</p>
-              </ng-template>
+              } @else {
+              <p class="relations-empty">No priests linked yet.</p>
+              }
 
               <div class="inline-row">
                 <input
                   type="number"
-                  [(ngModel)]="newPriestId"
-                  name="newPriestId"
+                  [value]="newPriestId()!"
+                  (input)="newPriestId.set($any($event.target).valueAsNumber)"
                   placeholder="Priest ID"
                 />
                 <button type="button" class="btn small" (click)="addPriest()">Add priest</button>
@@ -111,24 +121,26 @@
             <section class="relations-block">
               <h4>Parishioners</h4>
 
-              <ul class="relations-list" *ngIf="parishioners.length; else noParishioners">
-                <li *ngFor="let pa of parishioners">
+              @if (parishioners().length > 0) {
+              <ul class="relations-list">
+                @for (pa of parishioners(); track pa.id) {
+                <li>
                   <span>{{ pa.firstName }} {{ pa.lastName }}</span>
                   <button type="button" class="btn small secondary" (click)="removeParishioner(pa)">
                     Remove
                   </button>
                 </li>
+                }
               </ul>
-
-              <ng-template #noParishioners>
-                <p class="relations-empty">No parishioners linked yet.</p>
-              </ng-template>
+              } @else {
+              <p class="relations-empty">No parishioners linked yet.</p>
+              }
 
               <div class="inline-row">
                 <input
                   type="number"
-                  [(ngModel)]="newParishionerId"
-                  name="newParishionerId"
+                  [value]="newParishionerId()!"
+                  (input)="newParishionerId.set($any($event.target).valueAsNumber)"
                   placeholder="Parishioner ID"
                 />
                 <button type="button" class="btn small" (click)="addParishioner()">
@@ -137,8 +149,10 @@
               </div>
             </section>
           </div>
+          }
         </form>
       </div>
     </div>
+    }
   </div>
 </div>

@@ -19,7 +19,8 @@
           <th>Actions</th>
         </tr>
 
-        <tr *ngFor="let p of parishioners">
+        @for (p of parishioners(); track p.id) {
+        <tr>
           <td>{{ p.id }}</td>
           <td>{{ p.firstName }} {{ p.lastName }}</td>
           <td>{{ p.birthDate }}</td>
@@ -29,32 +30,35 @@
             <button class="btn small danger" (click)="delete(p.id!)">Delete</button>
           </td>
         </tr>
+        }
       </table>
     </div>
 
-    <!-- FORM MODAL -->
-    <div class="modal" *ngIf="showForm">
+    <!-- Modal -->
+    @if (showForm()) {
+    <div class="modal">
       <div class="modal-content">
-        <h2>{{ editMode ? 'Edit parishioner' : 'Create parishioner' }}</h2>
+        <h2>{{ editMode() ? 'Edit parishioner' : 'Create parishioner' }}</h2>
 
-        <form (ngSubmit)="save()">
+        <form [formGroup]="form" (ngSubmit)="save()">
           <label>First Name</label>
-          <input type="text" [(ngModel)]="form.firstName" name="firstName" required />
+          <input type="text" formControlName="firstName" required />
 
           <label>Last Name</label>
-          <input type="text" [(ngModel)]="form.lastName" name="lastName" required />
+          <input type="text" formControlName="lastName" required />
 
           <label>Birthdate</label>
-          <input type="date" [(ngModel)]="form.birthDate" name="birthDate" required />
+          <input type="date" formControlName="birthDate" required />
 
           <div class="modal-actions">
             <button type="submit" class="btn">
-              {{ editMode ? 'Save' : 'Create' }}
+              {{ editMode() ? 'Save' : 'Create' }}
             </button>
             <button type="button" class="btn secondary" (click)="close()">Cancel</button>
           </div>
         </form>
       </div>
     </div>
+    }
   </div>
 </div>

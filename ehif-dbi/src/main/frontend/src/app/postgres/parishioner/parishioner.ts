@@ -1,98 +1,102 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ParishionerService } from '../../api/services/parishioner.service';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
-export interface Parishioner {
-  id: number | null;
-  firstName: string;
-  lastName: string;
-  birthDate: string; // format: YYYY-MM-DD
-}
+import { ParishionerDto } from '../../api/models';
 
 @Component({
   standalone: true,
   selector: 'app-pg-parishioner',
   templateUrl: './parishioner.html',
   styleUrls: ['./parishioner.scss'],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
 })
 export class ParishionerComponent implements OnInit {
-  parishioners: Parishioner[] = [];
+  private api = inject(ParishionerService);
+  private fb = inject(FormBuilder);
 
-  showForm = false;
-  editMode = false;
+  // signals
+  parishioners = signal<ParishionerDto[]>([]);
+  showForm = signal(false);
+  editMode = signal(false);
+  selectedId = signal<number | null>(null);
 
-  form: Parishioner = {
-    id: null,
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-  };
-
-  constructor(private parishionerService: ParishionerService) {}
+  // reactive form
+  form = this.fb.group({
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    birthDate: ['', Validators.required],
+  });
 
   ngOnInit() {
     this.load();
   }
 
+  // --- Load all parishioners -------------------------------------------------
+
   load() {
-    this.parishionerService.getAllParishioners().subscribe((res: any[]) => {
-      // if backend returns birthDate already, this is basically a cast
-      this.parishioners = res.map((p) => ({
-        id: p.id,
-        firstName: p.firstName,
-        lastName: p.lastName,
-        birthDate: p.birthDate, // make sure this matches backend
-      }));
+    this.api.getAllParishioners().subscribe((res) => {
+      res = res ?? [];
+      this.parishioners.set(
+        res.map((p) => ({
+          id: p.id,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          birthDate: p.birthDate,
+        }))
+      );
     });
   }
 
+  // --- Form handling ---------------------------------------------------------
+
   openAdd() {
-    this.editMode = false;
-    this.form = {
-      id: null,
-      firstName: '',
-      lastName: '',
-      birthDate: '',
-    };
-    this.showForm = true;
+    this.editMode.set(false);
+    this.selectedId.set(null);
+    this.form.reset();
+    this.showForm.set(true);
   }
 
-  openEdit(p: Parishioner) {
-    this.editMode = true;
-    // shallow clone so form is independent
-    this.form = { ...p };
-    this.showForm = true;
+  openEdit(p: ParishionerDto) {
+    this.editMode.set(true);
+    this.selectedId.set(p.id ?? null);
+    this.form.patchValue(p);
+    this.showForm.set(true);
   }
 
   close() {
-    this.showForm = false;
+    this.showForm.set(false);
   }
 
+  // --- Save ------------------------------------------------------------------
+
   save() {
-    // console.log('save clicked', this.editMode, this.form); // uncomment to debug
+    if (this.form.invalid) return;
 
-    const payload = {
-      firstName: this.form.firstName,
-      lastName: this.form.lastName,
-      birthDate: this.form.birthDate,
-    };
+    const payload = this.form.value;
 
-    if (this.editMode && this.form.id != null) {
-      this.parishionerService
+    if (this.editMode() && this.selectedId() != null) {
+      this.api
         .updateParishioner({
-          parishionerId: this.form.id,
-          body: payload,
+          parishionerId: this.selectedId()!,
+          body: {
+            firstName: payload.firstName as string,
+            lastName: payload.lastName as string,
+            birthDate: payload.birthDate as string,
+          },
         })
         .subscribe(() => {
           this.load();
           this.close();
         });
     } else {
-      this.parishionerService
+      this.api
         .createParishioner({
-          body: payload,
+          body: {
+            firstName: payload.firstName as string,
+            lastName: payload.lastName as string,
+            birthDate: payload.birthDate as string,
+          },
         })
         .subscribe(() => {
           this.load();
@@ -101,7 +105,11 @@ export class ParishionerComponent implements OnInit {
     }
   }
 
+  // --- Delete ---------------------------------------------------------------
+
   delete(id: number) {
-    this.parishionerService.deleteParishioner({ parishionerId: id }).subscribe(() => this.load());
+    this.api.deleteParishioner({ parishionerId: id }).subscribe(() => {
+      this.load();
+    });
   }
 }
