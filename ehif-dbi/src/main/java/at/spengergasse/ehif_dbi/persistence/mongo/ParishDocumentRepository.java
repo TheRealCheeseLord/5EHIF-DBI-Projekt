@@ -3,7 +3,6 @@ package at.spengergasse.ehif_dbi.persistence.mongo;
 import at.spengergasse.ehif_dbi.domain.mongo.ParishDocument;
 import at.spengergasse.ehif_dbi.dtos.mongo.ParishDocumentSummaryDto;
 import org.bson.types.ObjectId;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

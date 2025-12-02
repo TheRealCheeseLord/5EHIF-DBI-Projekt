@@ -26,7 +26,7 @@ public class BenchmarkRestController {
 
     @Operation(summary = "Run read benchmarks")
     @GetMapping("/reads")
-    public ResponseEntity<Map<Integer, ReadTestOutputDto>> runReads() {
+    public ResponseEntity<ReadTestOutputDto> runReads() {
         return ResponseEntity.ok(benchmarkRunner.runReadBenchmarks());
     }
 

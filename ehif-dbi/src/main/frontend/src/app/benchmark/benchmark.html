@@ -21,32 +21,43 @@
         </div>
 
         <p class="card-desc">
-          Trigger individual benchmark categories. Results are recorded in the history chart.
+          Trigger individual benchmark categories. Results are recorded in the performance chart.
         </p>
 
         <div class="actions">
-          <button type="button" (click)="run('writes')" [disabled]="loading">Writes</button>
-          <button type="button" (click)="run('reads')" [disabled]="loading">Reads</button>
-          <button type="button" (click)="run('updates')" [disabled]="loading">Updates</button>
-          <button type="button" (click)="run('deletes')" [disabled]="loading">Deletes</button>
+          <button type="button" (click)="run('writes')" [disabled]="loading()">Writes</button>
+          <button type="button" (click)="run('reads')" [disabled]="loading()">Reads</button>
+          <button type="button" (click)="run('updates')" [disabled]="loading()">Updates</button>
+          <button type="button" (click)="run('mongo-index')" [disabled]="loading()">
+            Mongo Index
+          </button>
+          <button type="button" (click)="run('deletes')" [disabled]="loading()">Deletes</button>
         </div>
 
-        <div class="status-row" *ngIf="loading || error">
-          <span class="pill pill--loading" *ngIf="loading"> Running benchmark… </span>
-          <span class="pill pill--error" *ngIf="error">
-            {{ error }}
+        @if (loading() || error()) {
+        <div class="status-row">
+          @if (loading()) {
+          <span class="pill pill--loading"> Running benchmark… </span>
+          } @if (error()) {
+          <span class="pill pill--error">
+            {{ error() }}
           </span>
+          }
         </div>
+        }
       </div>
 
       <!-- LATEST RESPONSE -->
-      <div class="card card--results" *ngIf="results as res">
+      @if (results(); as res) {
+      <div class="card card--results">
         <div class="card-header-row">
           <h2>Latest Response</h2>
 
-          <span class="badge" *ngIf="lastType">
-            {{ labelForType(lastType) }}
+          @if (lastType()) {
+          <span class="badge">
+            {{ labelForType(lastType()!) }}
           </span>
+          }
         </div>
 
         <p class="card-desc">Average times per operation, based on the latest run.</p>
@@ -57,14 +68,14 @@
               <span class="dot dot--pg"></span>
               <span class="label">Postgres (avg)</span>
             </div>
-            <span class="value"> {{ lastPgTime | number : '1.0-0' }} ms </span>
+            <span class="value"> {{ lastPgTime() | number : '1.0-0' }} ms </span>
           </div>
           <div class="stat stat--mg">
             <div class="stat-label-row">
               <span class="dot dot--mg"></span>
               <span class="label">MongoDB (avg)</span>
             </div>
-            <span class="value"> {{ lastMgTime | number : '1.0-0' }} ms </span>
+            <span class="value"> {{ lastMgTime() | number : '1.0-0' }} ms </span>
           </div>
         </div>
 
@@ -73,12 +84,13 @@
           <pre class="json-pre">{{ res | json }}</pre>
         </details>
       </div>
+      }
 
       <!-- Chart -->
       <div class="card card--chart">
-        <h2>Run History</h2>
+        <h2>Run Performance</h2>
         <p class="card-desc">
-          Each benchmark run adds a new data point. Use it to compare relative performance.
+          Each benchmark displays data points. Use it to compare relative performance.
         </p>
         <div class="chart-shell">
           <canvas id="benchmarkChart"></canvas>

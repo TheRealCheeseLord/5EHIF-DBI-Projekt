@@ -12,7 +12,9 @@ import { WriteTestOutputDto } from '../../models/write-test-output-dto';
 export interface RunWrites$Params {
 }
 
-export function runWrites(http: HttpClient, rootUrl: string, params?: RunWrites$Params, context?: HttpContext): Observable<StrictHttpResponse<WriteTestOutputDto>> {
+export function runWrites(http: HttpClient, rootUrl: string, params?: RunWrites$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: WriteTestOutputDto;
+}>> {
   const rb = new RequestBuilder(rootUrl, runWrites.PATH, 'get');
   if (params) {
   }
@@ -22,7 +24,9 @@ export function runWrites(http: HttpClient, rootUrl: string, params?: RunWrites$
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<WriteTestOutputDto>;
+      return r as StrictHttpResponse<{
+      [key: string]: WriteTestOutputDto;
+      }>;
     })
   );
 }

@@ -7,13 +7,13 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
-import { AllTestOutputDto } from '../../models/all-test-output-dto';
+import { MongoIndexTestOutputDto } from '../../models/mongo-index-test-output-dto';
 
-export interface RunAll$Params {
+export interface RunMongoIndex$Params {
 }
 
-export function runAll(http: HttpClient, rootUrl: string, params?: RunAll$Params, context?: HttpContext): Observable<StrictHttpResponse<AllTestOutputDto>> {
-  const rb = new RequestBuilder(rootUrl, runAll.PATH, 'get');
+export function runMongoIndex(http: HttpClient, rootUrl: string, params?: RunMongoIndex$Params, context?: HttpContext): Observable<StrictHttpResponse<MongoIndexTestOutputDto>> {
+  const rb = new RequestBuilder(rootUrl, runMongoIndex.PATH, 'get');
   if (params) {
   }
 
@@ -22,9 +22,9 @@ export function runAll(http: HttpClient, rootUrl: string, params?: RunAll$Params
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return r as StrictHttpResponse<AllTestOutputDto>;
+      return r as StrictHttpResponse<MongoIndexTestOutputDto>;
     })
   );
 }
 
-runAll.PATH = '/api/benchmarks/run-all';
+runMongoIndex.PATH = '/api/benchmarks/mongo-index';

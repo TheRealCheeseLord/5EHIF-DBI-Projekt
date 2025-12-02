@@ -10,13 +10,13 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
-import { AllTestOutputDto } from '../models/all-test-output-dto';
 import { DeleteTestOutputDto } from '../models/delete-test-output-dto';
+import { MongoIndexTestOutputDto } from '../models/mongo-index-test-output-dto';
 import { ReadTestOutputDto } from '../models/read-test-output-dto';
-import { runAll } from '../fn/benchmark/run-all';
-import { RunAll$Params } from '../fn/benchmark/run-all';
 import { runDeletes } from '../fn/benchmark/run-deletes';
 import { RunDeletes$Params } from '../fn/benchmark/run-deletes';
+import { runMongoIndex } from '../fn/benchmark/run-mongo-index';
+import { RunMongoIndex$Params } from '../fn/benchmark/run-mongo-index';
 import { runReads } from '../fn/benchmark/run-reads';
 import { RunReads$Params } from '../fn/benchmark/run-reads';
 import { runUpdates } from '../fn/benchmark/run-updates';
@@ -45,7 +45,9 @@ export class BenchmarkService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  runWrites$Response(params?: RunWrites$Params, context?: HttpContext): Observable<StrictHttpResponse<WriteTestOutputDto>> {
+  runWrites$Response(params?: RunWrites$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: WriteTestOutputDto;
+}>> {
     const obs = runWrites(this.http, this.rootUrl, params, context);
     return obs;
   }
@@ -60,10 +62,16 @@ export class BenchmarkService extends BaseService {
    *
    * This method doesn't expect any request body.
    */
-  runWrites(params?: RunWrites$Params, context?: HttpContext): Observable<WriteTestOutputDto> {
+  runWrites(params?: RunWrites$Params, context?: HttpContext): Observable<{
+[key: string]: WriteTestOutputDto;
+}> {
     const resp = this.runWrites$Response(params, context);
     return resp.pipe(
-      map((r: StrictHttpResponse<WriteTestOutputDto>): WriteTestOutputDto => r.body)
+      map((r: StrictHttpResponse<{
+[key: string]: WriteTestOutputDto;
+}>): {
+[key: string]: WriteTestOutputDto;
+} => r.body)
     );
   }
 
@@ -102,45 +110,6 @@ export class BenchmarkService extends BaseService {
     );
   }
 
-  /** Path part for operation `runAll()` */
-  static readonly RunAllPath = '/api/benchmarks/run-all';
-
-  /**
-   * Run all benchmarks (not recommended).
-   *
-   * This endpoint calls all benchmarks in one request. For accurate timing, each benchmark should be called individually and results aggregated externally.
-   *
-   * This method provides access to the full `HttpResponse`, allowing access to response headers.
-   * To access only the response body, use `runAll()` instead.
-   *
-   * This method doesn't expect any request body.
-   *
-   * @deprecated
-   */
-  runAll$Response(params?: RunAll$Params, context?: HttpContext): Observable<StrictHttpResponse<AllTestOutputDto>> {
-    const obs = runAll(this.http, this.rootUrl, params, context);
-    return obs;
-  }
-
-  /**
-   * Run all benchmarks (not recommended).
-   *
-   * This endpoint calls all benchmarks in one request. For accurate timing, each benchmark should be called individually and results aggregated externally.
-   *
-   * This method provides access only to the response body.
-   * To access the full response (for headers, for example), `runAll$Response()` instead.
-   *
-   * This method doesn't expect any request body.
-   *
-   * @deprecated
-   */
-  runAll(params?: RunAll$Params, context?: HttpContext): Observable<AllTestOutputDto> {
-    const resp = this.runAll$Response(params, context);
-    return resp.pipe(
-      map((r: StrictHttpResponse<AllTestOutputDto>): AllTestOutputDto => r.body)
-    );
-  }
-
   /** Path part for operation `runReads()` */
   static readonly RunReadsPath = '/api/benchmarks/reads';
 
@@ -173,6 +142,41 @@ export class BenchmarkService extends BaseService {
     const resp = this.runReads$Response(params, context);
     return resp.pipe(
       map((r: StrictHttpResponse<ReadTestOutputDto>): ReadTestOutputDto => r.body)
+    );
+  }
+
+  /** Path part for operation `runMongoIndex()` */
+  static readonly RunMongoIndexPath = '/api/benchmarks/mongo-index';
+
+  /**
+   * Run mongo find query with/without index comparisons.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `runMongoIndex()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  runMongoIndex$Response(params?: RunMongoIndex$Params, context?: HttpContext): Observable<StrictHttpResponse<MongoIndexTestOutputDto>> {
+    const obs = runMongoIndex(this.http, this.rootUrl, params, context);
+    return obs;
+  }
+
+  /**
+   * Run mongo find query with/without index comparisons.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `runMongoIndex$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  runMongoIndex(params?: RunMongoIndex$Params, context?: HttpContext): Observable<MongoIndexTestOutputDto> {
+    const resp = this.runMongoIndex$Response(params, context);
+    return resp.pipe(
+      map((r: StrictHttpResponse<MongoIndexTestOutputDto>): MongoIndexTestOutputDto => r.body)
     );
   }
 

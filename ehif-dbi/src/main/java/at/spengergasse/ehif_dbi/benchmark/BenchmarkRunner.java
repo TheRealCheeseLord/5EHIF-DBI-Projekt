@@ -8,6 +8,8 @@ import at.spengergasse.ehif_dbi.dtos.postgres.ParishSummaryDto;
 import at.spengergasse.ehif_dbi.persistence.mongo.ParishDocumentRepository;
 import at.spengergasse.ehif_dbi.persistence.postgres.ParishRepository;
 import com.mongodb.client.result.UpdateResult;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -25,6 +27,9 @@ public class BenchmarkRunner {
     private final ParishRepository parishRepository;
     private final ParishDocumentRepository parishDocumentRepository;
     private final MongoTemplate mongoTemplate;
+
+    @PersistenceContext
+    private EntityManager em;
 
     // später kannst du 100_000 ergänzen
     private static final int[] SCALES = {100, 1_000, 100_000};
@@ -55,17 +60,15 @@ public class BenchmarkRunner {
 
     /** Nur Reads – erwartet, dass vorher Daten geschrieben wurden */
     @Transactional(readOnly = true)
-    public Map<Integer, ReadTestOutputDto> runReadBenchmarks() {
+    public ReadTestOutputDto runReadBenchmarks() {
         System.out.println("=== READ BENCHMARKS STARTED ===");
 
-        Map<Integer, ReadTestOutputDto> output = new HashMap<>();
+        System.out.println();
 
-        for (int n : SCALES) {
-            System.out.println();
-            System.out.println("NOTE: expects existing data, scale label = " + n);
+        mongoTemplate.find(new Query(), ParishDocument.class);
 
-            output.put(n, runReadsForScale());
-        }
+        ReadTestOutputDto output = runReadsForScale();
+
         System.out.println();
         System.out.println("=== READ BENCHMARKS FINISHED ===");
 
@@ -215,6 +218,7 @@ public class BenchmarkRunner {
     // ===========================================================
 
     private long measureMillis(Runnable action) {
+        em.clear();
         long start = System.nanoTime();
         action.run();
         long end = System.nanoTime();

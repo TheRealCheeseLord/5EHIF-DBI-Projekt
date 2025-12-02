@@ -83,9 +83,9 @@ export type { RunWrites$Params as RunWrites$Params } from './fn/benchmark/run-wr
 export { runWrites as runWrites } from './fn/benchmark/run-writes';
 export type { RunUpdates$Params as RunUpdates$Params } from './fn/benchmark/run-updates';
 export { runUpdates as runUpdates } from './fn/benchmark/run-updates';
-export type { RunAll$Params as RunAll$Params } from './fn/benchmark/run-all';
-export { runAll as runAll } from './fn/benchmark/run-all';
 export type { RunReads$Params as RunReads$Params } from './fn/benchmark/run-reads';
 export { runReads as runReads } from './fn/benchmark/run-reads';
+export type { RunMongoIndex$Params as RunMongoIndex$Params } from './fn/benchmark/run-mongo-index';
+export { runMongoIndex as runMongoIndex } from './fn/benchmark/run-mongo-index';
 export type { RunDeletes$Params as RunDeletes$Params } from './fn/benchmark/run-deletes';
 export { runDeletes as runDeletes } from './fn/benchmark/run-deletes';
