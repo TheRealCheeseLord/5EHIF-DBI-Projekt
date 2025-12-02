@@ -13,4 +13,7 @@ export const routes: Routes = [
   { path: 'postgres/parishioners', pathMatch: 'full', component: ParishionerComponent },
   { path: 'postgres/parishes', pathMatch: 'full', component: ParishComponent },
   { path: 'postgres/priest', pathMatch: 'full', component: PriestComponent },
+  { path: 'mongo', pathMatch: 'full', component: ParishDocumentComponent },
+  { path: 'benchmark', pathMatch: 'full', component: BenchmarksComponent },
+  { path: 'validate', pathMatch: 'full', component: Validate },
 ];

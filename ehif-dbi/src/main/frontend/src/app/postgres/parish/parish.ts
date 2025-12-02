@@ -1,6 +1,6 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { ParishService } from '../../api/services/parish.service';
 import { ParishDto } from '../../api/models/parish-dto';
@@ -15,46 +15,58 @@ import { ParishionerSummaryDto } from '../../api/models/parishioner-summary-dto'
   styleUrls: ['./parish.scss'],
 })
 export class ParishComponent implements OnInit {
-  private parishService = inject(ParishService);
-  private fb = inject(FormBuilder);
-
-  // --------- signals ----------
+  // ------------------- SIGNAL STATE -------------------
   parishes = signal<ParishDto[]>([]);
   priests = signal<PriestSummaryDto[]>([]);
   parishioners = signal<ParishionerSummaryDto[]>([]);
 
+  loading = signal(false);
+  relationsLoading = signal(false);
+  error = signal<string | null>(null);
+
   showForm = signal(false);
   editMode = signal(false);
-  selectedParishId = signal<number | null>(null);
 
   newPriestId = signal<number | null>(null);
   newParishionerId = signal<number | null>(null);
 
-  // --------- form ----------
-  form = this.fb.group({
-    name: ['', Validators.required],
-    location: [''],
-    foundedYear: [null as number | null],
+  // ------------------- FORM -------------------
+  form = new FormGroup({
+    id: new FormControl<number | null>(null),
+    name: new FormControl('', Validators.required),
+    location: new FormControl(''),
+    foundedYear: new FormControl<number | null>(null),
   });
+
+  constructor(private parishService: ParishService) {}
 
   ngOnInit(): void {
     this.loadParishes();
   }
 
-  // --------- load parishes ----------
+  // ---------------- LOAD PARISHES ----------------
   loadParishes(): void {
-    this.parishService.getAllParishes().subscribe((data) => {
-      this.parishes.set(data ?? []);
+    this.loading.set(true);
+
+    this.parishService.getAllParishes().subscribe({
+      next: (data) => {
+        this.parishes.set(data ?? []);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Could not load parishes.');
+        this.loading.set(false);
+      },
     });
   }
 
-  // --------- open / close modal ----------
+  // ---------------- OPEN / CLOSE MODAL ----------------
   openCreate(): void {
     this.editMode.set(false);
-    this.selectedParishId.set(null);
     this.showForm.set(true);
 
     this.form.reset({
+      id: null,
       name: '',
       location: '',
       foundedYear: null,
@@ -62,85 +74,126 @@ export class ParishComponent implements OnInit {
 
     this.priests.set([]);
     this.parishioners.set([]);
-    this.newPriestId.set(null);
-    this.newParishionerId.set(null);
   }
 
   openEdit(p: ParishDto): void {
-    if (!p.id) return;
-
     this.editMode.set(true);
-    this.selectedParishId.set(p.id);
     this.showForm.set(true);
 
     this.form.patchValue({
+      id: p.id ?? null,
       name: p.name ?? '',
       location: p.location ?? '',
       foundedYear: p.foundedYear ?? null,
     });
 
-    this.loadRelations(p.id);
+    this.loadRelations(p.id!);
   }
 
   close(): void {
     this.showForm.set(false);
   }
 
-  // --------- create / update ----------
+  // ---------------- CREATE / UPDATE ----------------
   save(): void {
-    if (this.form.invalid) return;
-
-    const foundedYear = this.form.value.foundedYear ?? 0; // backend expects number, not null
-
-    const body = {
-      name: this.form.value.name as string,
-      location: (this.form.value.location as string) ?? '',
-      foundedYear, // number
-    };
-
-    if (this.editMode() && this.selectedParishId() != null) {
-      this.parishService
-        .updateParish({
-          parishId: this.selectedParishId()!,
-          body,
-        })
-        .subscribe(() => {
-          this.showForm.set(false);
-          this.loadParishes();
-        });
+    if (this.editMode() && this.form.value.id != null) {
+      this.update();
     } else {
-      this.parishService
-        .createParish({
-          body,
-        })
-        .subscribe(() => {
-          this.showForm.set(false);
-          this.loadParishes();
-        });
+      this.create();
     }
   }
 
-  // --------- delete ----------
-  delete(id: number): void {
-    this.parishService.deleteParish({ parishId: id }).subscribe(() => {
-      this.loadParishes();
+  private create(): void {
+    this.loading.set(true);
+
+    this.parishService
+      .createParish({
+        body: {
+          name: this.form.value.name!,
+          location: this.form.value.location!,
+          foundedYear: this.form.value.foundedYear!,
+        },
+      })
+      .subscribe({
+        next: () => {
+          this.showForm.set(false);
+          this.loadParishes();
+        },
+        error: () => {
+          this.error.set('Could not create parish.');
+          this.loading.set(false);
+        },
+      });
+  }
+
+  private update(): void {
+    this.loading.set(true);
+
+    this.parishService
+      .updateParish({
+        parishId: this.form.value.id!,
+        body: {
+          name: this.form.value.name!,
+          location: this.form.value.location!,
+          foundedYear: this.form.value.foundedYear!,
+        },
+      })
+      .subscribe({
+        next: () => {
+          this.showForm.set(false);
+          this.loadParishes();
+        },
+        error: () => {
+          this.error.set('Could not update parish.');
+          this.loading.set(false);
+        },
+      });
+  }
+
+  // ---------------- DELETE ----------------
+  delete(p: ParishDto): void {
+    if (!p.id) return;
+    if (!confirm(`Delete parish "${p.name}"?`)) return;
+
+    this.loading.set(true);
+
+    this.parishService.deleteParish({ parishId: p.id }).subscribe({
+      next: () => this.loadParishes(),
+      error: () => {
+        this.error.set('Could not delete parish.');
+        this.loading.set(false);
+      },
     });
   }
 
-  // --------- load relations ----------
+  // ---------------- LOAD PRIESTS + PARISHIONERS ----------------
   private loadRelations(parishId: number): void {
-    this.parishService.getPriests1({ parishId }).subscribe((priests) => {
-      this.priests.set(priests ?? []);
+    this.relationsLoading.set(true);
+
+    this.parishService.getPriests1({ parishId }).subscribe({
+      next: (priests) => {
+        this.priests.set(priests ?? []);
+        this.relationsLoading.set(false);
+      },
+      error: () => {
+        this.error.set('Could not load priests.');
+        this.relationsLoading.set(false);
+      },
     });
 
-    this.parishService.getParishioners1({ parishId }).subscribe((parishioners) => {
-      this.parishioners.set(parishioners ?? []);
+    this.parishService.getParishioners1({ parishId }).subscribe({
+      next: (parishioners) => {
+        this.parishioners.set(parishioners ?? []);
+      },
+      error: () => {
+        this.error.set('Could not load parishioners.');
+      },
     });
   }
 
-  // --------- add relations ----------
+  // ---------------- ADD RELATIONS ----------------
   addPriest(): void {
-    const parishId = this.selectedParishId();
+    const parishId = this.form.value.id;
     const priestId = this.newPriestId();
 
     if (!parishId || priestId == null) return;
@@ -150,14 +203,17 @@ export class ParishComponent implements OnInit {
         parishId,
         body: { priestId },
       })
-      .subscribe(() => {
-        this.newPriestId.set(null);
-        this.loadRelations(parishId);
+      .subscribe({
+        next: () => {
+          this.newPriestId.set(null);
+          this.loadRelations(parishId);
+        },
+        error: () => this.error.set('Could not add priest.'),
       });
   }
 
   addParishioner(): void {
-    const parishId = this.selectedParishId();
+    const parishId = this.form.value.id;
     const pid = this.newParishionerId();
 
     if (!parishId || pid == null) return;
@@ -167,34 +223,41 @@ export class ParishComponent implements OnInit {
         parishId,
         body: { parishionerId: pid },
       })
-      .subscribe(() => {
-        this.newParishionerId.set(null);
-        this.loadRelations(parishId);
+      .subscribe({
+        next: () => {
+          this.newParishionerId.set(null);
+          this.loadRelations(parishId);
+        },
+        error: () => this.error.set('Could not add parishioner.'),
       });
   }
 
-  // --------- remove relations ----------
+  // ---------------- REMOVE RELATIONS ----------------
   removePriest(pr: PriestSummaryDto): void {
-    const parishId = this.selectedParishId();
-    if (!parishId || !pr.id) return;
+    if (!this.form.value.id || !pr.id) return;
 
     this.parishService
       .removePriest1({
-        parishId,
+        parishId: this.form.value.id!,
         priestId: pr.id,
       })
-      .subscribe(() => this.loadRelations(parishId));
+      .subscribe({
+        next: () => this.loadRelations(this.form.value.id!),
+        error: () => this.error.set('Could not remove priest.'),
+      });
   }
 
   removeParishioner(pa: ParishionerSummaryDto): void {
-    const parishId = this.selectedParishId();
-    if (!parishId || !pa.id) return;
+    if (!this.form.value.id || !pa.id) return;
 
     this.parishService
       .removeParishioner1({
-        parishId,
+        parishId: this.form.value.id!,
         parishionerId: pa.id,
       })
-      .subscribe(() => this.loadRelations(parishId));
+      .subscribe({
+        next: () => this.loadRelations(this.form.value.id!),
+        error: () => this.error.set('Could not remove parishioner.'),
+      });
   }
 }

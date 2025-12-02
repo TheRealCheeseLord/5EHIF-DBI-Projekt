@@ -1,148 +1,208 @@
-<div class="page">
-  <div class="page-header">
-    <div>
-      <h1>Mongo · Parish Documents</h1>
-      <p class="subtitle">CRUD playground for the parishDocument collection.</p>
-    </div>
+<div class="page-root">
+  <div class="page-wrapper">
+    <header class="page-header">
+      <h1>MongoDB – Parish Documents</h1>
+      <p>CRUD playground for Parish Documents with Embedded Lists.</p>
+    </header>
 
-    <button class="btn primary" type="button" (click)="openCreate()">New document</button>
-  </div>
+    <div class="card">
+      <div class="card-header-row">
+        <h2>All Documents</h2>
 
-  <div class="card">
-    <div class="card-header-row">
-      <h2>Existing documents</h2>
-      <span class="badge" *ngIf="loading">Loading…</span>
-    </div>
+        <div class="card-header-actions">
+          <button class="btn" type="button" (click)="openCreateDoc()">+ New Document</button>
+        </div>
+      </div>
 
-    <p class="error" *ngIf="error">{{ error }}</p>
-
-    <p *ngIf="!loading && !error && documents.length === 0">No documents found yet.</p>
-
-    <div class="table-wrapper" *ngIf="documents.length > 0">
-      <table>
+      @if (error()) {
+      <p class="error">{{ error() }}</p>
+      } @if (!loading() && documents().length === 0) {
+      <p>No documents found.</p>
+      } @if (documents().length > 0) {
+      <table class="table">
         <thead>
           <tr>
             <th>ID</th>
             <th>Name</th>
             <th>Location</th>
             <th>Founded</th>
-            <th class="col-actions">Actions</th>
+            <th class="actions-cell">Actions</th>
           </tr>
         </thead>
-
         <tbody>
-          <tr *ngFor="let d of documents">
-            <td>{{ d.id }}</td>
+          @for (d of documents(); track d.id) {
+          <tr>
+            <td class="text-small">{{ d.id }}</td>
             <td>{{ d.name }}</td>
             <td>{{ d.location }}</td>
             <td>{{ d.foundedYear }}</td>
-
-            <td class="col-actions">
-              <button class="btn ghost btn-small" type="button" (click)="openEdit(d)">Edit</button>
-              <button class="btn danger btn-small" type="button" (click)="delete(d)">Delete</button>
+            <td class="actions-cell">
+              <button class="btn small" type="button" (click)="openEditDoc(d)">Edit</button>
+              <button class="btn small danger" type="button" (click)="deleteDoc(d)">Delete</button>
             </td>
           </tr>
+          }
         </tbody>
       </table>
+      }
     </div>
-  </div>
 
-  <!-- MODAL -->
-  <div class="modal-backdrop" *ngIf="showForm">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>{{ editMode ? 'Edit document' : 'Create document' }}</h2>
-        <button type="button" class="icon-btn" (click)="close()">✕</button>
+    @if (showDocModal()) {
+    <div class="modal backdrop-blur">
+      <div class="modal-content">
+        <div class="modal-header-row">
+          <h2>{{ editDocMode() ? 'Edit Document' : 'Create Document' }}</h2>
+          <button type="button" class="icon-btn" (click)="closeDocModal()">✕</button>
+        </div>
+
+        <form [formGroup]="docForm" (ngSubmit)="saveDoc()">
+          <label>
+            Name
+            <input type="text" formControlName="name" />
+          </label>
+
+          <label>
+            Location
+            <input type="text" formControlName="location" />
+          </label>
+
+          <label>
+            Founded Year
+            <input type="number" formControlName="foundedYear" />
+          </label>
+
+          <div class="modal-actions">
+            <button type="submit" class="btn" [disabled]="docForm.invalid">
+              {{ editDocMode() ? 'Save' : 'Create' }}
+            </button>
+            <button type="button" class="btn secondary" (click)="closeDocModal()">Cancel</button>
+          </div>
+        </form>
+
+        @if (editDocMode() && currentDoc(); as doc) {
+        <div class="relations-section">
+          <div class="relations-header">
+            <h3>Embedded Data</h3>
+          </div>
+
+          <section class="relations-block">
+            <div class="block-header">
+              <h4>Priests</h4>
+              <button class="btn small" type="button" (click)="openAddEmbedded('priest')">
+                + Add Priest
+              </button>
+            </div>
+
+            @if (doc.priests?.length) {
+            <ul class="relations-list">
+              @for (pr of doc.priests; track pr.id) {
+              <li>
+                <div class="info-col">
+                  <span class="fw-bold">{{ pr.firstName }} {{ pr.lastName }}</span>
+                  <span class="text-muted">Ord: {{ pr.ordinationDate }}</span>
+                </div>
+                <div class="actions-col">
+                  <button
+                    type="button"
+                    class="btn small secondary"
+                    (click)="openEditEmbedded('priest', pr)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn small danger"
+                    (click)="removeEmbedded('priest', pr.id!)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+              }
+            </ul>
+            } @else {
+            <p class="relations-empty">No priests embedded.</p>
+            }
+          </section>
+
+          <section class="relations-block">
+            <div class="block-header">
+              <h4>Parishioners</h4>
+              <button class="btn small" type="button" (click)="openAddEmbedded('parishioner')">
+                + Add Parishioner
+              </button>
+            </div>
+
+            @if (doc.parishioners?.length) {
+            <ul class="relations-list">
+              @for (pa of doc.parishioners; track pa.id) {
+              <li>
+                <div class="info-col">
+                  <span class="fw-bold">{{ pa.firstName }} {{ pa.lastName }}</span>
+                  <span class="text-muted">Born: {{ pa.birthDate }}</span>
+                </div>
+                <div class="actions-col">
+                  <button
+                    type="button"
+                    class="btn small secondary"
+                    (click)="openEditEmbedded('parishioner', pa)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="btn small danger"
+                    (click)="removeEmbedded('parishioner', pa.id!)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </li>
+              }
+            </ul>
+            } @else {
+            <p class="relations-empty">No parishioners embedded.</p>
+            }
+          </section>
+        </div>
+        }
       </div>
-
-      <form (ngSubmit)="save()">
-        <label>
-          <span>Name</span>
-          <input type="text" [(ngModel)]="form.name" name="name" required />
-        </label>
-
-        <label>
-          <span>Location</span>
-          <input type="text" [(ngModel)]="form.location" name="location" />
-        </label>
-
-        <label>
-          <span>Founded year</span>
-          <input type="number" [(ngModel)]="form.foundedYear" name="foundedYear" />
-        </label>
-
-        <div class="modal-actions">
-          <button type="submit" class="btn primary">
-            {{ editMode ? 'Save' : 'Create' }}
-          </button>
-          <button type="button" class="btn ghost" (click)="close()">Cancel</button>
-        </div>
-
-        <!-- RELATIONS -->
-        <div class="relations-section" *ngIf="editMode && form.id">
-          <h3>Priests</h3>
-
-          <ul *ngIf="priests.length > 0">
-            <li *ngFor="let pr of priests">
-              <span>{{ pr.firstName }} {{ pr.lastName }}</span>
-              <button class="btn ghost btn-small" type="button" (click)="removePriest(pr)">
-                Remove
-              </button>
-            </li>
-          </ul>
-
-          <div class="inline-form">
-            <input
-              type="text"
-              [(ngModel)]="newPriestFirst"
-              name="newPriestFirst"
-              placeholder="First name"
-            />
-            <input
-              type="text"
-              [(ngModel)]="newPriestLast"
-              name="newPriestLast"
-              placeholder="Last name"
-            />
-            <input type="date" [(ngModel)]="newPriestOrdination" name="newPriestOrdination" />
-
-            <button type="button" class="btn primary btn-small" (click)="addPriest()">
-              Add priest
-            </button>
-          </div>
-
-          <h3 style="margin-top: 1.3rem">Parishioners</h3>
-
-          <ul *ngIf="parishioners.length > 0">
-            <li *ngFor="let pa of parishioners">
-              <span>{{ pa.firstName }} {{ pa.lastName }}</span>
-              <button class="btn ghost btn-small" type="button" (click)="removeParishioner(pa)">
-                Remove
-              </button>
-            </li>
-          </ul>
-
-          <div class="inline-form">
-            <input
-              type="text"
-              [(ngModel)]="newParishionerFirst"
-              name="newParishionerFirst"
-              placeholder="First name"
-            />
-            <input
-              type="text"
-              [(ngModel)]="newParishionerLast"
-              name="newParishionerLast"
-              placeholder="Last name"
-            />
-            <input type="date" [(ngModel)]="newParishionerBirth" name="newParishionerBirth" />
-
-            <button type="button" class="btn primary btn-small" (click)="addParishioner()">
-              Add parishioner
-            </button>
-          </div>
-        </div>
-      </form>
     </div>
+    } @if (showEmbeddedModal()) {
+    <div class="modal modal-overlay">
+      <div class="modal-content small-modal">
+        <div class="modal-header-row">
+          <h2>{{ embeddedEditMode() ? 'Edit' : 'Add' }} {{ embeddedType() | titlecase }}</h2>
+          <button type="button" class="icon-btn" (click)="closeEmbeddedModal()">✕</button>
+        </div>
+
+        <form [formGroup]="embeddedForm" (ngSubmit)="saveEmbedded()">
+          <label>
+            First Name
+            <input type="text" formControlName="firstName" />
+          </label>
+
+          <label>
+            Last Name
+            <input type="text" formControlName="lastName" />
+          </label>
+
+          <label>
+            {{ embeddedType() === 'priest' ? 'Ordination Date' : 'Birth Date' }}
+            <input type="date" formControlName="dateField" />
+          </label>
+
+          <div class="modal-actions">
+            <button type="submit" class="btn" [disabled]="embeddedForm.invalid">
+              {{ embeddedEditMode() ? 'Save' : 'Add' }}
+            </button>
+            <button type="button" class="btn secondary" (click)="closeEmbeddedModal()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+    }
   </div>
 </div>

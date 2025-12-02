@@ -8,15 +8,24 @@
     <div class="card">
       <div class="card-header-row">
         <h2>All Parishes</h2>
-        <button class="btn" type="button" (click)="openCreate()">+ Add Parish</button>
+
+        <div class="card-header-actions">
+          <button class="btn" type="button" (click)="openCreate()">+ New Parish</button>
+        </div>
       </div>
 
+      @if (error()) {
+      <p class="error">{{ error() }}</p>
+      } @if (!loading() && !error() && parishes().length === 0) {
+      <p>No parishes found yet.</p>
+      } @if (parishes().length > 0) {
       <table class="table">
         <tr>
           <th>ID</th>
           <th>Name</th>
           <th>Location</th>
           <th>Founded</th>
+          <th class="actions-cell">Actions</th>
         </tr>
 
         @for (p of parishes(); track p.id) {
@@ -28,28 +37,38 @@
 
           <td class="actions-cell">
             <button class="btn small" type="button" (click)="openEdit(p)">Edit</button>
-            <button class="btn small danger" type="button" (click)="delete(p.id!)">Delete</button>
+            <button class="btn small danger" type="button" (click)="delete(p)">Delete</button>
           </td>
         </tr>
         }
       </table>
+      }
     </div>
 
     <!-- FORM MODAL -->
     @if (showForm()) {
     <div class="modal">
       <div class="modal-content">
-        <h2>{{ editMode() ? 'Edit parish' : 'Create parish' }}</h2>
+        <div class="modal-header-row">
+          <h2>{{ editMode() ? 'Edit parish' : 'Create parish' }}</h2>
+          <button type="button" class="icon-btn" (click)="close()">✕</button>
+        </div>
 
         <form [formGroup]="form" (ngSubmit)="save()">
-          <label>Name</label>
-          <input type="text" formControlName="name" required />
+          <label>
+            Name
+            <input type="text" formControlName="name" required />
+          </label>
 
-          <label>Location</label>
-          <input type="text" formControlName="location" />
+          <label>
+            Location
+            <input type="text" formControlName="location" />
+          </label>
 
-          <label>Founded year</label>
-          <input type="number" formControlName="foundedYear" />
+          <label>
+            Founded year
+            <input type="number" formControlName="foundedYear" />
+          </label>
 
           <div class="modal-actions">
             <button type="submit" class="btn">
@@ -58,10 +77,15 @@
             <button type="button" class="btn secondary" (click)="close()">Cancel</button>
           </div>
 
-          <!-- RELATIONS (only in edit mode) -->
-          @if (editMode() && selectedParishId()) {
+          <!-- RELATIONS -->
+          @if (editMode() && form.value.id) {
           <div class="relations-section">
-            <h3>Relations</h3>
+            <div class="relations-header">
+              <h3>Relations</h3>
+              @if (relationsLoading()) {
+              <span class="relations-loading">Loading relations…</span>
+              }
+            </div>
 
             <!-- PRIESTS -->
             <section class="relations-block">
@@ -85,7 +109,7 @@
               <div class="inline-row">
                 <input
                   type="number"
-                  [value]="newPriestId() ?? ''"
+                  [value]="newPriestId()!"
                   (input)="newPriestId.set($any($event.target).valueAsNumber)"
                   placeholder="Priest ID"
                 />
@@ -115,7 +139,7 @@
               <div class="inline-row">
                 <input
                   type="number"
-                  [value]="newParishionerId() ?? ''"
+                  [value]="newParishionerId()!"
                   (input)="newParishionerId.set($any($event.target).valueAsNumber)"
                   placeholder="Parishioner ID"
                 />
