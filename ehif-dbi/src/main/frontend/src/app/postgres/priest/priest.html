@@ -1,28 +1,29 @@
+<!-- priest.html -->
 <div class="page-root">
   <div class="page-wrapper">
     <header class="page-header">
-      <h1>PostgreSQL – Parishioners</h1>
-      <p>Manage all parishioners stored in the PostgreSQL database.</p>
+      <h1>PostgreSQL – Priests</h1>
+      <p>Manage all priests stored in the PostgreSQL database.</p>
     </header>
 
     <div class="card">
       <div class="card-header-row">
-        <h2>All Parishioners</h2>
-        <button class="btn" (click)="openAdd()">+ Add Parishioner</button>
+        <h2>All Priests</h2>
+        <button class="btn" (click)="openAdd()">+ Add Priest</button>
       </div>
 
       <table class="table">
         <tr>
           <th>ID</th>
           <th>Name</th>
-          <th>Birthdate</th>
+          <th>Ordination Date</th>
         </tr>
 
-        @for (p of parishioners(); track p.id) {
+        @for (p of priests(); track p.id) {
         <tr>
           <td>{{ p.id }}</td>
           <td>{{ p.firstName }} {{ p.lastName }}</td>
-          <td>{{ p.birthDate }}</td>
+          <td>{{ p.ordinationDate }}</td>
 
           <td class="actions-cell">
             <button class="btn small" (click)="openEdit(p)">Edit</button>
@@ -33,11 +34,10 @@
       </table>
     </div>
 
-    <!-- Modal -->
     @if (showForm()) {
     <div class="modal">
       <div class="modal-content">
-        <h2>{{ editMode() ? 'Edit parishioner' : 'Create parishioner' }}</h2>
+        <h2>{{ editMode() ? 'Edit priest' : 'Create priest' }}</h2>
 
         <form [formGroup]="form" (ngSubmit)="save()">
           <label>First Name</label>
@@ -46,8 +46,8 @@
           <label>Last Name</label>
           <input type="text" formControlName="lastName" required />
 
-          <label>Birthdate</label>
-          <input type="date" formControlName="birthDate" required />
+          <label>Ordination Date</label>
+          <input type="date" formControlName="ordinationDate" required />
 
           <div class="modal-actions">
             <button type="submit" class="btn">

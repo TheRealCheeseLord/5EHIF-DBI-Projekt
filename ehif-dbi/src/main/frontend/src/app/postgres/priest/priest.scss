@@ -1,5 +1,5 @@
-/* PostgreSQL – Parishes page styles */
-/* Same look & feel as priests/parishioners */
+/* priest.scss */
+/* PostgreSQL – Priests page styles */
 
 /* ------------------------------ */
 /* LAYOUT WRAPPER */
@@ -199,7 +199,7 @@
 
 /* inputs */
 .modal-content input[type='text'],
-.modal-content input[type='number'] {
+.modal-content input[type='date'] {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border-radius: 10px;
@@ -212,12 +212,12 @@
 }
 
 .modal-content input[type='text']::placeholder,
-.modal-content input[type='number']::placeholder {
+.modal-content input[type='date']::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
 .modal-content input[type='text']:focus,
-.modal-content input[type='number']:focus {
+.modal-content input[type='date']:focus {
   border-color: rgba(0, 200, 255, 0.7);
   box-shadow: 0 0 0 1px rgba(0, 200, 255, 0.4);
   background: rgba(0, 0, 0, 0.5);
