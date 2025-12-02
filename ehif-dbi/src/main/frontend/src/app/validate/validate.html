@@ -1,0 +1,73 @@
+<div class="bench-root">
+  <div class="bench-wrapper">
+    <header class="bench-header">
+      <h1>Validate Parish Document</h1>
+      <p class="subtitle">Enter a ParishDocumentDto and validate it against the JSON schema.</p>
+    </header>
+
+    <section class="bench-main">
+      <div class="card card--controls">
+        <div class="card-header-row">
+          <h2>Input ParishDocument</h2>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="validate()">
+          <label>ID</label>
+          <input type="text" formControlName="id" placeholder="Optional" />
+
+          <label>Name *</label>
+          <input type="text" formControlName="name" required />
+
+          <label>Location</label>
+          <input type="text" formControlName="location" />
+
+          <label>Founded Year (>= 1500)</label>
+          <input type="number" formControlName="foundedYear" />
+
+          <label>Priests (JSON Array)</label>
+          <textarea
+            formControlName="priests"
+            rows="4"
+            placeholder='[{"id":"1","firstName":"John","lastName":"Doe","ordinationDate":"2020-01-01"}]'
+          ></textarea>
+
+          <label>Parishioners (JSON Array)</label>
+          <textarea
+            formControlName="parishioners"
+            rows="4"
+            placeholder='[{"id":"1","firstName":"Jane","lastName":"Doe","birthDate":"2000-01-01"}]'
+          ></textarea>
+
+          <div class="actions">
+            <button type="submit" [disabled]="loading()">Validate</button>
+          </div>
+        </form>
+
+        @if (loading()) {
+        <div class="status-row">
+          <span class="pill pill--loading">Validating...</span>
+        </div>
+        } @if (errors().length > 0) {
+        <div class="status-row">
+          <span class="pill pill--error">Validation Errors:</span>
+          <ul>
+            @for (err of errors(); track err.index) {
+            <li>
+              <b>{{ err.instanceLocation }}</b> {{ err.message }}
+            </li>
+            }
+          </ul>
+        </div>
+        } @if (lastValidated()) {
+        <div class="status-row">
+          <span class="pill pill--success">Document is valid!</span>
+          <details>
+            <summary>Show JSON</summary>
+            <pre>{{ lastValidated() | json }}</pre>
+          </details>
+        </div>
+        }
+      </div>
+    </section>
+  </div>
+</div>

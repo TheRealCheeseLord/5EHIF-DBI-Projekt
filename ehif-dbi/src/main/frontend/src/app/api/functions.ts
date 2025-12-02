@@ -79,6 +79,8 @@ export type { RemovePriest1$Params as RemovePriest1$Params } from './fn/parish/r
 export { removePriest1 as removePriest1 } from './fn/parish/remove-priest-1';
 export type { RemoveParishioner1$Params as RemoveParishioner1$Params } from './fn/parish/remove-parishioner-1';
 export { removeParishioner1 as removeParishioner1 } from './fn/parish/remove-parishioner-1';
+export type { ValidateParishDocument$Params as ValidateParishDocument$Params } from './fn/benchmark/validate-parish-document';
+export { validateParishDocument as validateParishDocument } from './fn/benchmark/validate-parish-document';
 export type { RunWrites$Params as RunWrites$Params } from './fn/benchmark/run-writes';
 export { runWrites as runWrites } from './fn/benchmark/run-writes';
 export type { RunUpdates$Params as RunUpdates$Params } from './fn/benchmark/run-updates';

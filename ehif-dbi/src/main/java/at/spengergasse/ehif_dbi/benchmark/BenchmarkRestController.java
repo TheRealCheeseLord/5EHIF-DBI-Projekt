@@ -1,14 +1,16 @@
 package at.spengergasse.ehif_dbi.benchmark;
 
 import at.spengergasse.ehif_dbi.benchmark.dto.*;
+import at.spengergasse.ehif_dbi.dtos.mongo.ParishDocumentDto;
+import at.spengergasse.ehif_dbi.service.mongo.ParishDocumentSchemaValidator;
+import com.networknt.schema.Error;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -17,6 +19,7 @@ import java.util.Map;
 public class BenchmarkRestController {
 
     private final BenchmarkRunner benchmarkRunner;
+    private final ParishDocumentSchemaValidator parishDocumentSchemaValidator;
 
     @Operation(summary = "Run write benchmarks")
     @GetMapping("/writes")
@@ -52,5 +55,11 @@ public class BenchmarkRestController {
     @GetMapping("/aggregation")
     public ResponseEntity<AggregationTestOutputDto> runAggregation() {
         return ResponseEntity.ok(benchmarkRunner.runAggregationBenchmarks());
+    }
+
+    @Operation(summary = "Validate parishDocument against json schema")
+    @PostMapping("/parishDocument-validate")
+    public ResponseEntity<List<Error>> validateParishDocument(@RequestBody(required = true) ParishDocumentDto parishDocumentDto) {
+        return ResponseEntity.ok(parishDocumentSchemaValidator.validateParishDocumentDto(parishDocumentDto));
     }
 }

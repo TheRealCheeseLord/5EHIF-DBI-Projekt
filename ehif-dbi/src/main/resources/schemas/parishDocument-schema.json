@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["name", "location", "foundedYear"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "location": { "type": "string" },
+    "foundedYear": { "type": "integer", "minimum": 1500 },
+    "priests": { "type": "array" },
+    "parishioners": { "type": "array" }
+  }
+}
