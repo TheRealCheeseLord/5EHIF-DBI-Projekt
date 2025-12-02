@@ -1,0 +1,200 @@
+/* ------------------------------ */
+/* LAYOUT WRAPPER */
+/* ------------------------------ */
+.bench-root {
+  padding: 2.5rem 1.5rem 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.bench-wrapper {
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* ------------------------------ */
+/* HEADER */
+/* ------------------------------ */
+.bench-header {
+  margin-bottom: 2rem;
+}
+
+.bench-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.bench-header p {
+  margin: 0.4rem 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+/* ------------------------------ */
+/* FORM CARD */
+/* ------------------------------ */
+.card--controls {
+  background: radial-gradient(circle at top left, #262638 0, #171720 45%, #12121a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem 1.75rem;
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card--controls h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.card-desc {
+  margin: 0.5rem 0 1.2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* ------------------------------ */
+/* FORM ELEMENTS */
+/* ------------------------------ */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 0.25rem;
+  }
+
+  input,
+  textarea {
+    padding: 0.65rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgb(var(--text-color));
+    font-size: 0.9rem;
+    font-family: 'Inter Variable', system-ui, sans-serif;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:focus {
+      border-color: rgba(0, 200, 255, 0.7);
+      box-shadow: 0 0 8px rgba(0, 200, 255, 0.4);
+      outline: none;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.75rem;
+  }
+}
+
+/* ------------------------------ */
+/* BUTTONS */
+/* ------------------------------ */
+.actions {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+button {
+  padding: 0.75rem 1.4rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease,
+    border-color 0.12s ease, opacity 0.12s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+    box-shadow: none;
+  }
+}
+
+/* ------------------------------ */
+/* STATUS PILL */
+/* ------------------------------ */
+.status-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+  align-items: flex-start;
+}
+
+.pill {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pill--loading {
+  background: rgba(0, 150, 255, 0.18);
+  color: rgba(200, 230, 255, 0.98);
+}
+
+.pill--error {
+  background: rgba(255, 60, 60, 0.18);
+  color: rgba(255, 205, 205, 0.98);
+}
+
+.pill--success {
+  background: rgba(0, 200, 0, 0.18);
+  color: rgba(180, 255, 180, 0.98);
+}
+
+/* ------------------------------ */
+/* JSON DETAILS */
+/* ------------------------------ */
+.json-details {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+}
+
+.json-details summary {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.json-pre {
+  margin-top: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  overflow-x: auto;
+  max-height: 260px;
+  font-family: monospace;
+}

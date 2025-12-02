@@ -12,6 +12,7 @@ import { StrictHttpResponse } from '../strict-http-response';
 
 import { AggregationTestOutputDto } from '../models/aggregation-test-output-dto';
 import { DeleteTestOutputDto } from '../models/delete-test-output-dto';
+import { Error } from '../models/error';
 import { MongoIndexTestOutputDto } from '../models/mongo-index-test-output-dto';
 import { ReadTestOutputDto } from '../models/read-test-output-dto';
 import { runAggregation } from '../fn/benchmark/run-aggregation';
@@ -27,12 +28,49 @@ import { RunUpdates$Params } from '../fn/benchmark/run-updates';
 import { runWrites } from '../fn/benchmark/run-writes';
 import { RunWrites$Params } from '../fn/benchmark/run-writes';
 import { UpdateTestOutputDto } from '../models/update-test-output-dto';
+import { validateParishDocument } from '../fn/benchmark/validate-parish-document';
+import { ValidateParishDocument$Params } from '../fn/benchmark/validate-parish-document';
 import { WriteTestOutputDto } from '../models/write-test-output-dto';
 
 @Injectable({ providedIn: 'root' })
 export class BenchmarkService extends BaseService {
   constructor(config: ApiConfiguration, http: HttpClient) {
     super(config, http);
+  }
+
+  /** Path part for operation `validateParishDocument()` */
+  static readonly ValidateParishDocumentPath = '/api/benchmarks/parishDocument-validate';
+
+  /**
+   * Validate parishDocument against json schema.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `validateParishDocument()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  validateParishDocument$Response(params: ValidateParishDocument$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<Error>>> {
+    const obs = validateParishDocument(this.http, this.rootUrl, params, context);
+    return obs;
+  }
+
+  /**
+   * Validate parishDocument against json schema.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `validateParishDocument$Response()` instead.
+   *
+   * This method sends `application/json` and handles request body of type `application/json`.
+   */
+  validateParishDocument(params: ValidateParishDocument$Params, context?: HttpContext): Observable<Array<Error>> {
+    const resp = this.validateParishDocument$Response(params, context);
+    return resp.pipe(
+      map((r: StrictHttpResponse<Array<Error>>): Array<Error> => r.body)
+    );
   }
 
   /** Path part for operation `runWrites()` */
