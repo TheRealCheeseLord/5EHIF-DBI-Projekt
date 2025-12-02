@@ -7,12 +7,16 @@ import at.spengergasse.ehif_dbi.dtos.mongo.ParishDocumentSummaryDto;
 import at.spengergasse.ehif_dbi.dtos.postgres.ParishSummaryDto;
 import at.spengergasse.ehif_dbi.persistence.mongo.ParishDocumentRepository;
 import at.spengergasse.ehif_dbi.persistence.postgres.ParishRepository;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.result.UpdateResult;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
@@ -134,6 +138,24 @@ public class BenchmarkRunner {
         System.out.println("=== MONGO INDEX BENCHMARKS FINISHED ===");
 
         return new MongoIndexTestOutputDto(timeNoIndex, timeWithIndex);
+    }
+
+    @Transactional(readOnly = true)
+    public AggregationTestOutputDto runAggregationBenchmarks() {
+        System.out.println("=== AGGREGATION BENCHMARKS STARTED ===");
+        System.out.println();
+        System.out.println("NOTE: aggregate");
+
+        long pgTime = measureMillis(parishRepository::averageFoundedYear);
+        long mongoTime = measureMillis(this::averageFoundedYearMongo);
+
+        System.out.println("Postgres avg foundedYear: " + pgTime + "ms");
+        System.out.println("Mongo avg foundedYear: " + mongoTime + "ms");
+
+        System.out.println();
+        System.out.println("=== MONGO INDEX BENCHMARKS FINISHED ===");
+
+        return new AggregationTestOutputDto(pgTime, mongoTime);
     }
 
     // ===========================================================
@@ -334,5 +356,21 @@ public class BenchmarkRunner {
 
     private void findMongoWithIndex(int foundedYear) {
         parishDocumentRepository.findByFoundedYearIndexed(foundedYear);
+    }
+
+    // ===========================================================
+    // AGGREGATION
+    // ===========================================================
+
+    public Double averageFoundedYearMongo() {
+        TypedAggregation<ParishDocument> agg = Aggregation.newAggregation(
+                ParishDocument.class,
+                Aggregation.group()        // no field to group by → global aggregation
+                        .avg("foundedYear").as("averageFoundedYear")
+        );
+
+        AggregationResults<BasicDBObject> result = mongoTemplate.aggregate(agg, ParishDocument.class, BasicDBObject.class);
+        return result.getMappedResults().isEmpty() ? null :
+                (Double) result.getMappedResults().getFirst().get("averageFoundedYear");
     }
 }

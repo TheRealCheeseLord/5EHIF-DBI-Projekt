@@ -23,4 +23,7 @@ public interface ParishRepository extends JpaRepository<Parish, Parish.ParishId>
 
     @Query("SELECT new at.spengergasse.ehif_dbi.dtos.postgres.ParishSummaryDto(p.id.id, p.name, p.location, p.foundedYear) FROM Parish p")
     List<ParishSummaryDto> findAllProjectedByFoundedYearBetweenOrderByFoundedYearDesc(int minFoundedYear, int maxFoundedYear);
+
+    @Query("SELECT AVG(p.foundedYear) FROM Parish p")
+    Double averageFoundedYear();
 }

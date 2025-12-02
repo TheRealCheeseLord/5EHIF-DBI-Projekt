@@ -47,4 +47,10 @@ public class BenchmarkRestController {
     public ResponseEntity<MongoIndexTestOutputDto> runMongoIndex() {
         return ResponseEntity.ok(benchmarkRunner.runMongoIndexBenchmarks());
     }
+
+    @Operation(summary = "Run aggregation benchmarks")
+    @GetMapping("/aggregation")
+    public ResponseEntity<AggregationTestOutputDto> runAggregation() {
+        return ResponseEntity.ok(benchmarkRunner.runAggregationBenchmarks());
+    }
 }

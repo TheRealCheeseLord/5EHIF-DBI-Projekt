@@ -89,3 +89,5 @@ export type { RunMongoIndex$Params as RunMongoIndex$Params } from './fn/benchmar
 export { runMongoIndex as runMongoIndex } from './fn/benchmark/run-mongo-index';
 export type { RunDeletes$Params as RunDeletes$Params } from './fn/benchmark/run-deletes';
 export { runDeletes as runDeletes } from './fn/benchmark/run-deletes';
+export type { RunAggregation$Params as RunAggregation$Params } from './fn/benchmark/run-aggregation';
+export { runAggregation as runAggregation } from './fn/benchmark/run-aggregation';

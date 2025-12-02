@@ -10,7 +10,13 @@ import {
   WriteTestOutputDto,
 } from '../api/models';
 
-export type BenchmarkType = 'writes' | 'reads' | 'updates' | 'deletes' | 'mongo-index';
+export type BenchmarkType =
+  | 'writes'
+  | 'reads'
+  | 'updates'
+  | 'deletes'
+  | 'mongo-index'
+  | 'aggregation';
 
 @Component({
   selector: 'app-benchmarks',
@@ -191,6 +197,29 @@ export class BenchmarksComponent implements AfterViewInit {
             this.lastMgTime.set(mgTimes);
 
             this.renderMongoIndexBarChart(res);
+          },
+          error: (err) => {
+            console.error(err);
+            this.loading.set(false);
+            this.error.set('Benchmark request failed – check backend logs.');
+          },
+        });
+        break;
+      }
+      case 'aggregation': {
+        this.benchmarkService.runAggregation().subscribe({
+          next: (res) => {
+            console.log('FRONTEND BENCHMARK RESPONSE', res);
+
+            this.loading.set(false);
+
+            this.results.set(res);
+
+            const { pg, mg } = this.extractTimes(res, type);
+            this.lastPgTime.set(pg);
+            this.lastMgTime.set(mg);
+
+            this.renderAggregationBarChart(res);
           },
           error: (err) => {
             console.error(err);
@@ -438,6 +467,50 @@ export class BenchmarksComponent implements AfterViewInit {
           {
             label: 'With Index (ms)',
             data: [data.mongoFindWithIndexTimeMs ?? 0],
+            borderColor: 'rgba(255, 80, 160, 0.9)',
+            backgroundColor: 'rgba(255, 80, 160, 0.9)',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: '#fbfbfb' },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: '#aaaaaa' },
+            grid: { color: 'rgba(255,255,255,0.05)' },
+          },
+          y: {
+            ticks: { color: '#aaaaaa' },
+            grid: { color: 'rgba(255,255,255,0.05)' },
+          },
+        },
+      },
+    });
+    this.chart.render();
+  }
+
+  renderAggregationBarChart(data: DeleteTestOutputDto) {
+    this.chart?.destroy();
+    this.chart = new Chart('benchmarkChart', {
+      type: 'bar',
+      data: {
+        labels: ['Aggregate (avg foundedYear)'],
+        datasets: [
+          {
+            label: 'Postgres (ms)',
+            data: [data.postgresTimeMs ?? 0],
+            borderColor: 'rgba(0, 180, 255, 0.9)',
+            backgroundColor: 'rgba(0, 180, 255, 0.9)',
+          },
+          {
+            label: 'MongoDB (ms)',
+            data: [data.mongoTimeMs ?? 0],
             borderColor: 'rgba(255, 80, 160, 0.9)',
             backgroundColor: 'rgba(255, 80, 160, 0.9)',
           },

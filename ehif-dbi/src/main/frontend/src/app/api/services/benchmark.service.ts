@@ -10,9 +10,12 @@ import { BaseService } from '../base-service';
 import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
+import { AggregationTestOutputDto } from '../models/aggregation-test-output-dto';
 import { DeleteTestOutputDto } from '../models/delete-test-output-dto';
 import { MongoIndexTestOutputDto } from '../models/mongo-index-test-output-dto';
 import { ReadTestOutputDto } from '../models/read-test-output-dto';
+import { runAggregation } from '../fn/benchmark/run-aggregation';
+import { RunAggregation$Params } from '../fn/benchmark/run-aggregation';
 import { runDeletes } from '../fn/benchmark/run-deletes';
 import { RunDeletes$Params } from '../fn/benchmark/run-deletes';
 import { runMongoIndex } from '../fn/benchmark/run-mongo-index';
@@ -212,6 +215,41 @@ export class BenchmarkService extends BaseService {
     const resp = this.runDeletes$Response(params, context);
     return resp.pipe(
       map((r: StrictHttpResponse<DeleteTestOutputDto>): DeleteTestOutputDto => r.body)
+    );
+  }
+
+  /** Path part for operation `runAggregation()` */
+  static readonly RunAggregationPath = '/api/benchmarks/aggregation';
+
+  /**
+   * Run aggregation benchmarks.
+   *
+   *
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `runAggregation()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  runAggregation$Response(params?: RunAggregation$Params, context?: HttpContext): Observable<StrictHttpResponse<AggregationTestOutputDto>> {
+    const obs = runAggregation(this.http, this.rootUrl, params, context);
+    return obs;
+  }
+
+  /**
+   * Run aggregation benchmarks.
+   *
+   *
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `runAggregation$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  runAggregation(params?: RunAggregation$Params, context?: HttpContext): Observable<AggregationTestOutputDto> {
+    const resp = this.runAggregation$Response(params, context);
+    return resp.pipe(
+      map((r: StrictHttpResponse<AggregationTestOutputDto>): AggregationTestOutputDto => r.body)
     );
   }
 

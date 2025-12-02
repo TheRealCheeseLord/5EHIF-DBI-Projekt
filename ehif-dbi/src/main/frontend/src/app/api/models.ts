@@ -5,6 +5,7 @@ export type { AddParishionerCommand } from './models/add-parishioner-command';
 export type { AddParishionerEmbeddedCommand } from './models/add-parishioner-embedded-command';
 export type { AddPriestCommand } from './models/add-priest-command';
 export type { AddPriestEmbeddedCommand } from './models/add-priest-embedded-command';
+export type { AggregationTestOutputDto } from './models/aggregation-test-output-dto';
 export type { CreateParishCommand } from './models/create-parish-command';
 export type { CreateParishionerCommand } from './models/create-parishioner-command';
 export type { CreatePriestCommand } from './models/create-priest-command';
