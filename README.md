@@ -13,26 +13,6 @@ Repository for the DBI project in the 5EHIF, focusing on comparing **SQL vs NoSQ
 
 ---
 
-## Download and Run the Release JAR
-
-You can download a prebuilt version of the application from the **Releases** page. This allows you to run the application without building it from source.
-
-### Steps
-
-1. **Go to the Releases page**  
-   [GitHub Releases](https://github.com/TheRealCheeseLord/5EHIF-DBI-Projekt/releases)
-
-2. **Download the JAR**  
-   Look for the latest release (e.g., `v1.0.0`) and download the file named similar to: `5EHIF-DBI-Projekt-0.0.1-SNAPSHOT.jar`
-
-4. **Run the JAR**  
-Make sure you have Java 25+ installed. Then run the JAR from the command line:
-```bash
-java -jar 5EHIF-DBI-Projekt-0.0.1-SNAPSHOT.jar
-```
-
----
-
 ## 🛠️ Setup & Build
 
 ### 1. Clone the repository
@@ -46,20 +26,14 @@ cd 5EHIF-DBI-Projekt
 Make sure you have Java 25 and Maven installed.
 
 ```bash
-./mvnw clean package
+./mvnw clean verify
 ```
-
-This will generate a **JAR file** in the `target/` directory.
 
 ---
 
 ## 🏃 Running the Application
 
-1. Run the Spring Boot application:
-
-```bash
-java -jar target/5EHIF-DBI-Projekt-0.0.1-SNAPSHOT.jar
-```
+1. Run the Spring Boot (Test) application
 
 2. Access the main dashboard and API docs in your browser:
 - **Dashboard:** http://localhost:8080/  
