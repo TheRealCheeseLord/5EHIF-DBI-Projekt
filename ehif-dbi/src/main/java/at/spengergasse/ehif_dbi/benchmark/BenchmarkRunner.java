@@ -273,6 +273,7 @@ public class BenchmarkRunner {
         }
 
         parishRepository.saveAll(parish);
+        parishRepository.flush();
     }
 
     private void writeParishesMongo(int n) {
